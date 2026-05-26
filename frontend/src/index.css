@@ -1,0 +1,207 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;700&display=swap');
+
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #06070a;
+    color: #f3f4f6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2235;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #bd922b;
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(15, 17, 28, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-panel-glow {
+  background: rgba(20, 24, 38, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37),
+              inset 0 0 12px rgba(255, 255, 255, 0.05);
+}
+
+/* Premium Text Glows */
+.text-neon-gold {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(189, 146, 43, 0.3),
+               0 0 20px rgba(189, 146, 43, 0.2);
+}
+
+.text-neon-cyan {
+  text-shadow: 0 0 10px rgba(0, 92, 169, 0.4),
+               0 0 20px rgba(0, 92, 169, 0.2);
+}
+
+/* Jersey Customizer Back Print */
+.jersey-back-print {
+  font-family: 'Teko', sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Hide Spin Buttons */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Diagonal Background Slits */
+.diagonal-bg {
+  clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+}
+
+.clip-slanted {
+  clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+}
+
+/* Infinite Scrolling Marquee */
+@keyframes marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Page Transition Keyframes */
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-page-transition {
+  animation: pageFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Premium Gold CTA Button Shimmer */
+.btn-gold-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 30%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(25deg);
+  transition: all 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.btn-gold-shimmer:hover::after {
+  left: 125%;
+}
+
+/* Ambient Drifting Particles Keyframes */
+@keyframes ambientDrift {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate3d(25px, -35px, 0) scale(1.4);
+    opacity: 0.45;
+  }
+}
+
+.animate-ambient-sparkle {
+  animation: ambientDrift 14s ease-in-out infinite;
+}
+
+/* Team Card hover glows and border transitions */
+.team-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.team-card:hover {
+  transform: translateY(-5px) scale(1.03) !important;
+}
+
+.team-card-netherlands:hover {
+  box-shadow: 0 15px 35px rgba(255, 106, 0, 0.22) !important;
+  border-color: rgba(255, 106, 0, 0.4) !important;
+}
+
+.team-card-portugal:hover {
+  box-shadow: 0 15px 35px rgba(227, 10, 23, 0.22) !important;
+  border-color: rgba(227, 10, 23, 0.4) !important;
+}
+
+.team-card-psg:hover {
+  box-shadow: 0 15px 35px rgba(0, 92, 169, 0.22) !important;
+  border-color: rgba(0, 92, 169, 0.4) !important;
+}
+
+.team-card-real-madrid:hover {
+  box-shadow: 0 15px 35px rgba(156, 119, 230, 0.22) !important;
+  border-color: rgba(156, 119, 230, 0.4) !important;
+}
+
+.team-card-nano-banana:hover {
+  box-shadow: 0 15px 35px rgba(250, 208, 44, 0.22) !important;
+  border-color: rgba(250, 208, 44, 0.4) !important;
+}
+
+.team-card-barcelona:hover {
+  box-shadow: 0 15px 35px rgba(165, 0, 68, 0.22) !important;
+  border-color: rgba(165, 0, 68, 0.4) !important;
+}
+
+.team-card-argentina:hover {
+  box-shadow: 0 15px 35px rgba(117, 170, 219, 0.22) !important;
+  border-color: rgba(117, 170, 219, 0.4) !important;
+}
+
+.team-card-brazil:hover {
+  box-shadow: 0 15px 35px rgba(0, 151, 57, 0.22) !important;
+  border-color: rgba(0, 151, 57, 0.4) !important;
+}
+

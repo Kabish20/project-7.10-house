@@ -79,7 +79,7 @@ const MainLayout = () => {
 
       {/* 7.10 House Premium Footer */}
       <footer className="bg-[#040507] pt-16 pb-8 px-6 border-t border-white/5 text-gray-500 text-xs">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           
           {/* Column 1: Info */}
           <div>
@@ -90,27 +90,11 @@ const MainLayout = () => {
               The world's premium portal for high-definition authentic retro football jerseys, vintage collectibles, and fully personalized sports wear.
             </p>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" title="Twitter / X">
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </a>
               <a href="#" className="text-gray-400 hover:text-white transition-colors" title="Instagram">
                 <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                </svg>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" title="Youtube">
-                <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
-                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
-                </svg>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors" title="Github">
-                <svg className="w-4 h-4 fill-none stroke-current stroke-2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
                 </svg>
               </a>
             </div>
@@ -136,20 +120,6 @@ const MainLayout = () => {
               <li><a href="#" className="hover:text-white transition-colors">Express Delivery Details</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Returns & Replacements</a></li>
             </ul>
-          </div>
-
-          {/* Column 4: Newsletter */}
-          <div>
-            <h5 className="text-white font-extrabold uppercase tracking-wider text-xs mb-4">7.10 House Newsletter</h5>
-            <p className="text-gray-500 mb-3 text-[11px]">Subscribe to unlock early access to retro drop launches and private sales.</p>
-            <div className="flex gap-2">
-              <input 
-                type="email" 
-                placeholder="Enter email" 
-                className="bg-white/5 border border-white/5 focus:border-[#bd922b]/20 px-3 py-2 rounded-xl text-white text-xs outline-none w-full placeholder-gray-600"
-              />
-              <button className="bg-linear-to-r from-[#bd922b] to-[#E3C488] text-black font-extrabold px-4 rounded-xl text-[10px] uppercase tracking-wider">Join</button>
-            </div>
           </div>
 
         </div>
@@ -186,6 +156,30 @@ const MainLayout = () => {
           Secure VIP Live Chat
         </span>
       </a>
+
+      {/* SVG Chroma Key Filter for Green Grass Background Removal */}
+      <svg className="absolute w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+          <filter id="remove-green-grass" colorInterpolationFilters="sRGB">
+            {/* Create an alpha mask from the green channel difference */}
+            <feColorMatrix 
+              type="matrix" 
+              values="
+                1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                3.0 -5.5 3.0 1.0 0.3" 
+              result="mask"
+            />
+            {/* Sharpen the alpha transition to create a clean cutout */}
+            <feComponentTransfer in="mask" result="sharpMask">
+              <feFuncA type="linear" slope="15" intercept="-5.0"/>
+            </feComponentTransfer>
+            {/* Combine the sharp mask with the original image */}
+            <feComposite operator="in" in="SourceGraphic" in2="sharpMask"/>
+          </filter>
+        </defs>
+      </svg>
 
     </div>
   );

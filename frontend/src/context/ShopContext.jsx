@@ -474,7 +474,7 @@ export const ShopProvider = ({ children }) => {
     } catch (err) {
       console.warn('API admin login failed, attempting local fallback:', err);
       if (username.toUpperCase() === 'KABISH') {
-        const localAdmin = { success: true, username: 'KABISH', email: 'kabishme@gmail.com', is_staff: true };
+        const localAdmin = { success: true, username: 'KABISH', email: '7.10houseonline@gmail.com', is_staff: true };
         setAdminUser(localAdmin);
         return { success: true };
       }
@@ -518,7 +518,22 @@ export const ShopProvider = ({ children }) => {
         setProducts((prev) => [newProduct, ...prev]);
         return { success: true, data: newProduct };
       }
-      return { success: false, message: 'Failed to create product in database.' };
+      
+      // Parse specific backend validation errors
+      let errorMsg = 'Failed to create product in database.';
+      try {
+        const errData = await response.json();
+        if (errData && typeof errData === 'object') {
+          const errorDetails = Object.entries(errData)
+            .map(([field, msgs]) => `${field.toUpperCase()}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join(' | ');
+          if (errorDetails) {
+            errorMsg = errorDetails;
+          }
+        }
+      } catch {}
+      
+      return { success: false, message: errorMsg };
     } catch {
       const newProduct = {
         id: Date.now(),
@@ -558,7 +573,22 @@ export const ShopProvider = ({ children }) => {
         setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
         return { success: true, data: updated };
       }
-      return { success: false, message: 'Failed to update product in database.' };
+      
+      // Parse specific backend validation errors
+      let errorMsg = 'Failed to update product in database.';
+      try {
+        const errData = await response.json();
+        if (errData && typeof errData === 'object') {
+          const errorDetails = Object.entries(errData)
+            .map(([field, msgs]) => `${field.toUpperCase()}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+            .join(' | ');
+          if (errorDetails) {
+            errorMsg = errorDetails;
+          }
+        }
+      } catch {}
+      
+      return { success: false, message: errorMsg };
     } catch {
       // Optimistic local update when API is offline
       setProducts((prev) =>

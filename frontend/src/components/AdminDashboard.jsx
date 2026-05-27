@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
+import TransparentProductImage from './TransparentProductImage';
 import {
   Lock, User, LogOut, LayoutDashboard, Shirt, PlusCircle,
   Trash2, Sparkles, CheckCircle2, TrendingUp, X, Pencil
 } from 'lucide-react';
+
+const isUploadedImage = (url) => {
+  if (!url) return false;
+  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
+};
 
 const AdminDashboard = () => {
   const {
@@ -62,9 +68,17 @@ const AdminDashboard = () => {
   // Edit product modal state
   const [editProduct, setEditProduct] = useState(null); // null = closed
   const [editSaving, setEditSaving] = useState(false);
-  const [editImageUrls, setEditImageUrls] = useState([]);
-  const [editUploadingImages, setEditUploadingImages] = useState(false);
 
+  // Dedicated states for front/back views
+  const [frontImageUrl, setFrontImageUrl] = useState('/barca_jersey.png');
+  const [backImageUrl, setBackImageUrl] = useState('');
+  const [uploadingFront, setUploadingFront] = useState(false);
+  const [uploadingBack, setUploadingBack] = useState(false);
+
+  const [editFrontImageUrl, setEditFrontImageUrl] = useState('');
+  const [editBackImageUrl, setEditBackImageUrl] = useState('');
+  const [editUploadingFront, setEditUploadingFront] = useState(false);
+  const [editUploadingBack, setEditUploadingBack] = useState(false);
 
   // Derived markup & profit
   const retailVal = parseFloat(newProduct.price) || 0;
@@ -73,57 +87,96 @@ const AdminDashboard = () => {
   const markup = costVal > 0 ? ((profit / costVal) * 100) : 0;
   const profitHealth = markup >= 40 ? 'good' : markup >= 20 ? 'ok' : markup > 0 ? 'low' : 'none';
 
-  const [imageUrls, setImageUrls] = useState(['/barca_jersey.png']);
+  // Front and Back Image Upload handler
+  const handleUploadImage = async (e, side) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
 
-  const [uploadingImages, setUploadingImages] = useState(false);
+    // Reset input value to allow selecting the same file again if the previous attempt failed
+    if (e.target) e.target.value = '';
 
-  const handleFileChange = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    setUploadingImages(true);
-
-    // Read files as base64
-    const loaders = files.map(file => new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(file);
-    }));
+    if (side === 'front') setUploadingFront(true);
+    else setUploadingBack(true);
 
     try {
-      const base64Urls = await Promise.all(loaders);
+      const reader = new FileReader();
+      const base64Promise = new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+      });
 
-      // Upload to Django backend — it saves them and returns /media/ URLs
+      const base64Url = await base64Promise;
       const res = await fetch(`${API_URL}/upload-images/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: base64Urls }),
+        body: JSON.stringify({ images: [base64Url] }),
       });
 
       if (res.ok) {
         const data = await res.json();
-        const mediaUrls = data.urls; // e.g. ["/media/jerseys/abc123.png"]
-        setImageUrls((prev) => {
-          if (prev.length === 1 && prev[0] === '/barca_jersey.png') return mediaUrls;
-          return [...prev, ...mediaUrls];
-        });
+        const uploadedUrl = data.urls[0];
+        if (side === 'front') {
+          setFrontImageUrl(uploadedUrl);
+        } else {
+          setBackImageUrl(uploadedUrl);
+        }
       } else {
         alert('Image upload failed. Please try again.');
       }
     } catch (err) {
       console.error('Upload error:', err);
-      alert('Image upload failed. Is the backend running?');
+      alert('Image upload failed. Please verify the file is a valid image.');
     } finally {
-      setUploadingImages(false);
+      if (side === 'front') setUploadingFront(false);
+      else setUploadingBack(false);
     }
   };
 
-  const removeImageUrlInput = (index) => {
-    setImageUrls((prev) => {
-      const newList = prev.filter((_, i) => i !== index);
-      // If we remove all images, fall back to the placeholder
-      return newList.length === 0 ? ['/barca_jersey.png'] : newList;
-    });
+  // Edit front/back image upload handler
+  const handleEditUploadImage = async (e, side) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+
+    // Reset input value to allow selecting the same file again if the previous attempt failed
+    if (e.target) e.target.value = '';
+
+    if (side === 'front') setEditUploadingFront(true);
+    else setEditUploadingBack(true);
+
+    try {
+      const reader = new FileReader();
+      const base64Promise = new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+      });
+
+      const base64Url = await base64Promise;
+      const res = await fetch(`${API_URL}/upload-images/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ images: [base64Url] }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const uploadedUrl = data.urls[0];
+        if (side === 'front') {
+          setEditFrontImageUrl(uploadedUrl);
+        } else {
+          setEditBackImageUrl(uploadedUrl);
+        }
+      } else {
+        alert('Image upload failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Image upload failed. Please verify the file is a valid image.');
+    } finally {
+      if (side === 'front') setEditUploadingFront(false);
+      else setEditUploadingBack(false);
+    }
   };
 
   // Handle Login submission
@@ -165,44 +218,11 @@ const AdminDashboard = () => {
       rating: String(product.rating),
       is_featured: product.is_featured,
     });
-    setEditImageUrls(
-      product.image_url
-        ? product.image_url.split(',').map((u) => u.trim()).filter(Boolean)
-        : []
-    );
-  };
-
-  // Handle edit image upload (same flow as add)
-  const handleEditFileChange = async (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-    setEditUploadingImages(true);
-    const loaders = files.map(
-      (file) =>
-        new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        })
-    );
-    try {
-      const base64Urls = await Promise.all(loaders);
-      const res = await fetch(`${API_URL}/upload-images/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: base64Urls }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setEditImageUrls((prev) => [...prev, ...data.urls]);
-      } else {
-        alert('Image upload failed.');
-      }
-    } catch {
-      alert('Image upload failed. Is the backend running?');
-    } finally {
-      setEditUploadingImages(false);
-    }
+    
+    // Split comma-separated URLs from backend into front and back image inputs
+    const urls = product.image_url ? product.image_url.split(',').map(u => u.trim()).filter(Boolean) : [];
+    setEditFrontImageUrl(urls[0] || '/barca_jersey.png');
+    setEditBackImageUrl(urls[1] || '');
   };
 
   // Submit edit
@@ -210,6 +230,9 @@ const AdminDashboard = () => {
     e.preventDefault();
     if (!editProduct) return;
     setEditSaving(true);
+    
+    const imageUrlField = [editFrontImageUrl, editBackImageUrl].filter(url => url && url.trim() !== '').join(',');
+    
     const payload = {
       name: editProduct.name,
       slug: editProduct.slug,
@@ -219,7 +242,7 @@ const AdminDashboard = () => {
       colors: editProduct.colors,
       rating: parseFloat(editProduct.rating || 5),
       is_featured: editProduct.is_featured,
-      image_url: editImageUrls.join(','),
+      image_url: imageUrlField,
     };
     const res = await updateProduct(editProduct.id, payload);
     setEditSaving(false);
@@ -242,13 +265,21 @@ const AdminDashboard = () => {
     setSubmitStatus('loading');
     setSubmitError('');
 
+    const imageUrlField = [frontImageUrl, backImageUrl].filter(url => url && url.trim() !== '').join(',');
+
+    // Generate unique slug suffix to prevent database constraints conflict
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    const cleanSlug = (newProduct.slug || newProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''));
+    const finalSlug = cleanSlug ? `${cleanSlug}-${randomSuffix}` : `jersey-${Date.now()}`;
+
     // Prepare clean request object
     const pData = {
       ...newProduct,
+      slug: finalSlug,
       price: parseFloat(newProduct.price),
       rating: parseFloat(newProduct.rating || 5.0),
       category: parseInt(newProduct.category),
-      image_url: imageUrls.filter(url => url.trim() !== '').join(',')
+      image_url: imageUrlField
     };
 
     const res = await addProduct(pData);
@@ -282,7 +313,8 @@ const AdminDashboard = () => {
           'EMBROIDERED EMBLEM & SHORT SLEEVE'
         ]
       });
-      setImageUrls(['/barca_jersey.png']);
+      setFrontImageUrl('/barca_jersey.png');
+      setBackImageUrl('');
       setTimeout(() => setSubmitStatus('idle'), 3000);
     } else {
       setSubmitStatus('error');
@@ -505,7 +537,11 @@ const AdminDashboard = () => {
                     <tr key={p.id} className="hover:bg-white/1 group transition-all">
                       <td className="p-4 flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/3 rounded-lg overflow-hidden border border-white/5 p-1 flex items-center justify-center shrink-0">
-                          <img src={p.image_url?.split(',')[0]} alt={p.name} className="w-full h-full object-contain filter drop-shadow-sm" />
+                          <TransparentProductImage 
+                            src={p.image_url?.split(',')[0]} 
+                            alt={p.name} 
+                            className="w-full h-full object-contain filter drop-shadow-sm" 
+                          />
                         </div>
                         <div>
                           <p className="text-white font-black line-clamp-1">{p.name}</p>
@@ -679,64 +715,104 @@ const AdminDashboard = () => {
                   </div>
                 )}
 
-                <div className="col-span-1 sm:col-span-2 space-y-3">
-                  <label className="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest block">
-                    Upload Jersey Image(s)
-                  </label>
-
-                  {/* File Input */}
-                  <div className="relative group">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      disabled={uploadingImages}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
-                    />
-                    <div className={`w-full py-4 px-3 rounded-lg border border-dashed transition-all flex flex-col items-center justify-center gap-1 ${uploadingImages ? 'border-[#bd922b]/40 bg-[#bd922b]/5' : 'border-white/10 group-hover:border-[#bd922b]/30 bg-white/2 hover:bg-white/3'}`}>
-                      {uploadingImages ? (
-                        <>
-                          <div className="w-4 h-4 rounded-full border-2 border-[#bd922b]/30 border-t-[#bd922b] animate-spin" />
-                          <span className="text-[10px] font-bold text-[#bd922b]">Uploading images...</span>
-                        </>
-                      ) : (
-                        <>
-                          <PlusCircle className="w-4 h-4 text-gray-400 group-hover:text-[#bd922b] group-hover:rotate-90 transition-all duration-300" />
-                          <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors">
-                            Click to upload jersey images
-                          </span>
-                          <span className="text-[9px] text-gray-500 uppercase tracking-wider">
-                            PNG, JPG, JPEG, WEBP · Multiple allowed
-                          </span>
-                        </>
-                      )}
-                    </div>
+                <div className="col-span-1 sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Front View Image */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-extrabold text-[#bd922b] uppercase tracking-widest block">
+                      Front View Image
+                    </label>
+                    {frontImageUrl && frontImageUrl !== '/barca_jersey.png' ? (
+                      <div className="glass-panel group relative rounded-xl overflow-hidden border border-white/5 bg-white/3 flex flex-col items-center justify-center p-3 h-32">
+                        <TransparentProductImage 
+                          src={frontImageUrl} 
+                          alt="Front View Preview" 
+                          className="h-[75%] object-contain filter drop-shadow-md" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFrontImageUrl('/barca_jersey.png')}
+                          className="absolute top-2 right-2 p-1.5 bg-black/85 hover:bg-rose-500 text-white rounded-lg transition-all shadow-md border border-white/5 cursor-pointer"
+                          title="Remove image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="text-[8px] text-gray-500 uppercase tracking-widest mt-1">Active Front Image</span>
+                      </div>
+                    ) : (
+                      <div className="relative group h-32">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleUploadImage(e, 'front')}
+                          disabled={uploadingFront}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                        />
+                        <div className={`w-full h-full rounded-xl border border-dashed transition-all flex flex-col items-center justify-center gap-1 ${uploadingFront ? 'border-[#bd922b]/40 bg-[#bd922b]/5' : 'border-white/10 group-hover:border-[#bd922b]/30 bg-white/2 hover:bg-white/3'}`}>
+                          {uploadingFront ? (
+                            <>
+                              <div className="w-5 h-5 rounded-full border-2 border-[#bd922b]/30 border-t-[#bd922b] animate-spin" />
+                              <span className="text-[10px] font-bold text-[#bd922b]">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
+                              <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Front View</span>
+                              <span className="text-[8px] text-gray-500 uppercase tracking-wider text-center px-2">PNG, JPG, WEBP formats</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Previews List */}
-                  {imageUrls.length > 0 && imageUrls[0] !== '/barca_jersey.png' && (
-                    <div className="space-y-1 pt-1">
-                      <p className="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">
-                        Previews ({imageUrls.length})
-                      </p>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 gap-2">
-                        {imageUrls.map((url, index) => (
-                          <div key={index} className="glass-panel group relative rounded-lg aspect-square overflow-hidden border border-white/5 bg-white/3 flex items-center justify-center p-1">
-                            <img src={url} alt="preview" className="w-full h-full object-contain filter drop-shadow-sm" />
-                            <button
-                              type="button"
-                              onClick={() => removeImageUrlInput(index)}
-                              className="absolute top-1 right-1 p-0.5 bg-black/80 hover:bg-rose-500 text-white rounded transition-all scale-0 group-hover:scale-100 shadow-md border border-white/5 cursor-pointer"
-                              title="Remove image"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
+                  {/* Back View Image */}
+                  <div className="space-y-2">
+                    <label className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest block">
+                      Back View Image
+                    </label>
+                    {backImageUrl ? (
+                      <div className="glass-panel group relative rounded-xl overflow-hidden border border-white/5 bg-white/3 flex flex-col items-center justify-center p-3 h-32">
+                        <TransparentProductImage 
+                          src={backImageUrl} 
+                          alt="Back View Preview" 
+                          className="h-[75%] object-contain filter drop-shadow-md" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setBackImageUrl('')}
+                          className="absolute top-2 right-2 p-1.5 bg-black/85 hover:bg-rose-500 text-white rounded-lg transition-all shadow-md border border-white/5 cursor-pointer"
+                          title="Remove image"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                        <span className="text-[8px] text-gray-500 uppercase tracking-widest mt-1">Active Back Image</span>
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="relative group h-32">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleUploadImage(e, 'back')}
+                          disabled={uploadingBack}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                        />
+                        <div className={`w-full h-full rounded-xl border border-dashed transition-all flex flex-col items-center justify-center gap-1 ${uploadingBack ? 'border-[#bd922b]/40 bg-[#bd922b]/5' : 'border-white/10 group-hover:border-[#bd922b]/30 bg-white/2 hover:bg-white/3'}`}>
+                          {uploadingBack ? (
+                            <>
+                              <div className="w-5 h-5 rounded-full border-2 border-[#bd922b]/30 border-t-[#bd922b] animate-spin" />
+                              <span className="text-[10px] font-bold text-[#bd922b]">Uploading...</span>
+                            </>
+                          ) : (
+                            <>
+                              <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
+                              <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Back View</span>
+                              <span className="text-[8px] text-gray-500 uppercase tracking-wider text-center px-2">PNG, JPG, WEBP formats</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
               </div>
@@ -892,44 +968,100 @@ const AdminDashboard = () => {
                 />
               </div>
 
-              {/* Row 4: Images */}
-              <div className="space-y-3">
-                <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest block">Jersey Images</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                  {editImageUrls.map((url, idx) => (
-                    <div key={idx} className="relative group aspect-square bg-white/5 rounded-xl overflow-hidden border border-white/8 flex items-center justify-center p-2">
-                      <img src={url} alt="jersey" className="w-full h-full object-contain filter drop-shadow-sm" />
+              {/* Row 4: Images (Front + Back Views) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+                {/* Front View Image */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-extrabold text-[#bd922b] uppercase tracking-widest block">Front View Image</label>
+                  {editFrontImageUrl && editFrontImageUrl !== '/barca_jersey.png' ? (
+                    <div className="glass-panel group relative rounded-xl overflow-hidden border border-white/8 bg-white/3 flex flex-col items-center justify-center p-3 h-32">
+                      <TransparentProductImage 
+                        src={editFrontImageUrl} 
+                        alt="Front View" 
+                        className="h-[75%] object-contain filter drop-shadow-md" 
+                      />
                       <button
                         type="button"
-                        onClick={() => setEditImageUrls((prev) => prev.filter((_, i) => i !== idx))}
-                        className="absolute top-1 right-1 p-1 bg-black/80 hover:bg-rose-500 text-white rounded-lg scale-0 group-hover:scale-100 transition-all cursor-pointer border border-white/10"
+                        onClick={() => setEditFrontImageUrl('/barca_jersey.png')}
+                        className="absolute top-2 right-2 p-1.5 bg-black/85 hover:bg-rose-500 text-white rounded-lg transition-all shadow-md border border-white/10 cursor-pointer"
+                        title="Remove image"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-3.5 h-3.5" />
                       </button>
+                      <span className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Active Front Image</span>
                     </div>
-                  ))}
-                  {/* Upload zone */}
-                  <div className="relative group aspect-square">
-                    <input
-                      type="file" multiple accept="image/*"
-                      onChange={handleEditFileChange}
-                      disabled={editUploadingImages}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
-                    />
-                    <div className={`w-full h-full rounded-xl border border-dashed transition-all flex flex-col items-center justify-center gap-1.5 ${editUploadingImages ? 'border-[#bd922b]/50 bg-[#bd922b]/5' : 'border-white/15 group-hover:border-[#bd922b]/40 bg-white/3 group-hover:bg-white/5'}`}>
-                      {editUploadingImages ? (
-                        <>
-                          <div className="w-5 h-5 rounded-full border-2 border-[#bd922b]/30 border-t-[#bd922b] animate-spin" />
-                          <span className="text-[9px] font-bold text-[#bd922b] text-center">Uploading...</span>
-                        </>
-                      ) : (
-                        <>
-                          <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
-                          <span className="text-[9px] font-bold text-gray-500 group-hover:text-gray-300 transition-colors text-center leading-tight">Add Images</span>
-                        </>
-                      )}
+                  ) : (
+                    <div className="relative group h-32">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleEditUploadImage(e, 'front')}
+                        disabled={editUploadingFront}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                      />
+                      <div className={`w-full h-full rounded-xl border border-dashed transition-all flex flex-col items-center justify-center gap-1.5 ${editUploadingFront ? 'border-[#bd922b]/50 bg-[#bd922b]/5' : 'border-white/15 group-hover:border-[#bd922b]/40 bg-white/3 group-hover:bg-white/5'}`}>
+                        {editUploadingFront ? (
+                          <>
+                            <div className="w-5 h-5 rounded-full border-2 border-[#bd922b]/30 border-t-[#bd922b] animate-spin" />
+                            <span className="text-[10px] font-bold text-[#bd922b]">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
+                            <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Front View</span>
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider text-center">PNG, JPG, WEBP formats</span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
+                </div>
+
+                {/* Back View Image */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest block">Back View Image</label>
+                  {editBackImageUrl ? (
+                    <div className="glass-panel group relative rounded-xl overflow-hidden border border-white/8 bg-white/3 flex flex-col items-center justify-center p-3 h-32">
+                      <TransparentProductImage 
+                        src={editBackImageUrl} 
+                        alt="Back View" 
+                        className="h-[75%] object-contain filter drop-shadow-md" 
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditBackImageUrl('')}
+                        className="absolute top-2 right-2 p-1.5 bg-black/85 hover:bg-rose-500 text-white rounded-lg transition-all shadow-md border border-white/10 cursor-pointer"
+                        title="Remove image"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="text-[9px] text-gray-500 uppercase tracking-widest mt-1">Active Back Image</span>
+                    </div>
+                  ) : (
+                    <div className="relative group h-32">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleEditUploadImage(e, 'back')}
+                        disabled={editUploadingBack}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                      />
+                      <div className={`w-full h-full rounded-xl border border-dashed transition-all flex flex-col items-center justify-center gap-1.5 ${editUploadingBack ? 'border-[#bd922b]/50 bg-[#bd922b]/5' : 'border-white/15 group-hover:border-[#bd922b]/40 bg-white/3 group-hover:bg-white/5'}`}>
+                        {editUploadingBack ? (
+                          <>
+                            <div className="w-5 h-5 rounded-full border-2 border-[#bd922b]/30 border-t-[#bd922b] animate-spin" />
+                            <span className="text-[10px] font-bold text-[#bd922b]">Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
+                            <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Back View</span>
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider text-center">PNG, JPG, WEBP formats</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

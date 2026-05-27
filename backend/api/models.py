@@ -16,7 +16,10 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    image_url = models.TextField()
+    image_url = models.TextField(
+        verbose_name="Front and Back View Images",
+        help_text="Provide comma-separated image URLs: first for Front View, second for Back View."
+    )
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=5.0)
     colors = models.CharField(max_length=200, help_text="Comma-separated colors, e.g. Red, Blue")
     is_featured = models.BooleanField(default=False)

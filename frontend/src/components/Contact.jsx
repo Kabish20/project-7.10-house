@@ -68,7 +68,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <p className="text-white font-extrabold text-xs uppercase tracking-tight">Direct Concierge Email</p>
-                    <p className="text-[#bd922b] font-semibold text-[13px] mt-0.5">concierge@710house.com</p>
+                    <p className="text-[#bd922b] font-semibold text-[13px] mt-0.5">7.10houseonline@gmail.com</p>
                     <p className="text-gray-500 text-[10px] uppercase mt-1">Available for active orders & bulk requests</p>
                   </div>
                 </div>

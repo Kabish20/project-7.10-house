@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
+import TransparentProductImage from './TransparentProductImage';
 import { X, Plus, Minus, Trash2, ShoppingBag, Sparkles, CheckCircle } from 'lucide-react';
+
+const isUploadedImage = (url) => {
+  if (!url) return false;
+  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
+};
 
 const Cart = () => {
   const { 
@@ -20,8 +26,43 @@ const Cart = () => {
     if (cart.length === 0) return;
     setCheckoutStatus('processing');
     
-    // Simulate premium transaction
+    // Construct WhatsApp order details message
+    const orderItemsText = cart.map((item, idx) => {
+      const customText = item.isCustom 
+        ? `\n    └─ Customization: *${item.customDetails?.name} #${item.customDetails?.number}*` 
+        : '';
+      
+      const rawImageUrl = item.product.image_url?.split(',')[0] || '';
+      const imageLink = rawImageUrl.startsWith('http')
+        ? rawImageUrl
+        : `${window.location.origin}${rawImageUrl}`;
+
+      return `${idx + 1}. *${item.product.name}*\n    ├─ Size: *${item.size}*\n    ├─ Qty: *${item.quantity}*\n    ├─ Price: *${formatPrice(item.product.price * item.quantity)}* (${formatPrice(item.product.price)} each)${customText}\n    └─ Image: ${imageLink}`;
+    }).join('\n\n');
+
+    const totalAmount = formatPrice(getCartTotal());
+
+    const messageText = [
+      `🛒 *SECURE PREMIUM CHECKOUT — 7.10 HOUSE*`,
+      ``,
+      `👋 Hello! I would like to place an order for the following elite items:`,
+      ``,
+      orderItemsText,
+      ``,
+      `💳 *ORDER SUMMARY:*`,
+      `├─ Subtotal: *${totalAmount}*`,
+      `├─ Premium Shipping: *FREE*`,
+      `└─ *Total Amount:* *${totalAmount}*`,
+      ``,
+      `Please verify availability and share payment/delivery instructions. Thank you! 🙏`,
+    ].join('\n');
+
+    const encodedText = encodeURIComponent(messageText);
+    const whatsappUrl = `https://wa.me/919003878494?text=${encodedText}`;
+
+    // Establish secure connection and then redirect to WhatsApp
     setTimeout(() => {
+      window.open(whatsappUrl, '_blank');
       setCheckoutStatus('success');
       setTimeout(() => {
         clearCart();
@@ -82,7 +123,7 @@ const Cart = () => {
                     
                     {/* Item Image */}
                     <div className="w-16 h-16 bg-white/3 rounded-lg overflow-hidden flex items-center justify-center p-2 border border-white/5">
-                      <img 
+                      <TransparentProductImage 
                         src={item.product.image_url?.split(',')[0]} 
                         alt={item.product.name} 
                         className="w-full h-full object-contain filter drop-shadow-md" 
@@ -183,22 +224,22 @@ const Cart = () => {
                   <>
                     <div className="w-12 h-12 rounded-full border-4 border-[#bd922b]/30 border-t-[#bd922b] animate-spin mb-4" />
                     <h3 className="text-white text-base font-black uppercase tracking-widest animate-pulse">
-                      Processing Checkout
+                      Connecting to WhatsApp
                     </h3>
-                    <p className="text-gray-500 text-xs mt-1">Establishing secure connection to premium gateways...</p>
+                    <p className="text-gray-500 text-xs mt-1">Establishing secure link for your premium order...</p>
                   </>
                 )}
                 {checkoutStatus === 'success' && (
                   <div className="animate-fadeIn flex flex-col items-center">
                     <CheckCircle className="w-16 h-16 text-emerald-400 mb-4 animate-bounce" />
                     <h3 className="text-white text-lg font-black uppercase tracking-tight">
-                      Order Placed Successfully!
+                      Order Sent via WhatsApp!
                     </h3>
                     <p className="text-[#bd922b] font-extrabold text-[10px] tracking-widest uppercase mt-1 animate-pulse">
                       Get ready for the pitch
                     </p>
                     <p className="text-gray-400 text-xs mt-3 max-w-[240px]">
-                      Your elite custom kit order has been verified. Tracking instructions have been dispatched to your email.
+                      Your elite custom kit order has been prepared. Please complete the purchase on WhatsApp.
                     </p>
                   </div>
                 )}

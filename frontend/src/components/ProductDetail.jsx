@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
+import TransparentProductImage from './TransparentProductImage';
 import { ShoppingBag, ArrowLeft, Plus, Minus, Ruler } from 'lucide-react';
+
+const isUploadedImage = (url) => {
+  if (!url) return false;
+  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
+};
 
 const getProductDetails = (product) => {
   if (!product) return [];
@@ -202,30 +208,36 @@ const ProductDetail = () => {
           {/* Left half: Split Display Columns */}
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4">
             
-            {/* Column 1: Full Showcase View */}
+            {/* Column 1: Front View */}
             <div className="glass-panel rounded-3xl overflow-hidden aspect-3/4 flex items-center justify-center p-8 border border-white/5 relative bg-[#090b11]/70 group">
               {/* Green artificial grass/spotlight background texture layer simulating user request */}
-              <div className="absolute inset-0 bg-radial-gradient from-emerald-950/15 via-[#07080d]/60 to-[#07080d] pointer-events-none" />
+              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(',')[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/80 to-[#07080d]' : 'bg-radial-gradient from-emerald-950/15 via-[#07080d]/60 to-[#07080d]'}`} />
               <div className="absolute top-4 left-4 z-10 px-2.5 py-0.5 bg-black/65 text-[#bd922b] text-[8px] font-black tracking-widest rounded-md uppercase border border-[#bd922b]/20">
-                Studio View
+                Front View
               </div>
-              <img 
+              <TransparentProductImage 
                 src={activeHeroProduct.image_url?.split(',')[0]} 
-                alt={activeHeroProduct.name} 
-                className="w-[90%] object-contain filter drop-shadow-[0_20px_35px_rgba(0,0,0,0.8)] group-hover:scale-103 transition-transform duration-500"
+                alt={`${activeHeroProduct.name} Front View`} 
+                className="w-[90%] object-contain group-hover:scale-103 transition-transform duration-500"
+                style={{
+                  filter: 'drop-shadow(0 20px 35px rgba(0,0,0,0.8))'
+                }}
               />
             </div>
 
-            {/* Column 2: Close-up Textures View */}
+            {/* Column 2: Back View */}
             <div className="glass-panel rounded-3xl overflow-hidden aspect-3/4 flex items-center justify-center p-8 border border-white/5 relative bg-[#0a0c14]/70 group">
-              <div className="absolute inset-0 bg-radial-gradient from-emerald-900/10 via-[#07080d]/75 to-[#07080d] pointer-events-none" />
+              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(',')[1] || activeHeroProduct.image_url?.split(',')[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/85 to-[#07080d]' : 'bg-radial-gradient from-emerald-900/10 via-[#07080d]/75 to-[#07080d]'}`} />
               <div className="absolute top-4 left-4 z-10 px-2.5 py-0.5 bg-black/65 text-gray-400 text-[8px] font-black tracking-widest rounded-md uppercase border border-white/5">
-                Close-up Profile
+                Back View
               </div>
-              <img 
+              <TransparentProductImage 
                 src={activeHeroProduct.image_url?.split(',')[1] || activeHeroProduct.image_url?.split(',')[0]} 
-                alt={`${activeHeroProduct.name} texture`} 
-                className="w-[90%] object-contain filter saturate-110 drop-shadow-[0_20px_30px_rgba(0,0,0,0.7)] group-hover:scale-105 transition-transform duration-500 scale-x-[-1]"
+                alt={`${activeHeroProduct.name} Back View`} 
+                className={`w-[90%] object-contain group-hover:scale-105 transition-transform duration-500 ${!activeHeroProduct.image_url?.split(',')[1] ? 'scale-x-[-1]' : ''}`}
+                style={{
+                  filter: 'saturate(1.1) drop-shadow(0 20px 30px rgba(0,0,0,0.7))'
+                }}
               />
             </div>
 

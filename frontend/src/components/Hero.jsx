@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useShop } from '../context/ShopContext';
+import TransparentProductImage from './TransparentProductImage';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import ronaldoImg from '../card Image/CRISTIANO RONALDO.jpeg';
 import messiImg from '../card Image/D10s.jpeg';
@@ -14,6 +15,11 @@ import acMilanLogo from '../club logo/ac_milan.jpeg';
 import interMiamiLogo from '../club logo/inter_miami.jpeg';
 import liverpoolLogo from '../club logo/liverpool.jpeg';
 import santosLogo from '../club logo/santos.jpeg';
+
+const isUploadedImage = (url) => {
+  if (!url) return false;
+  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
+};
 
 // Premium dynamic canvas background remover to strip white JPEG backgrounds while preserving inner white graphics.
 const LogoImage = ({ src, alt, className }) => {
@@ -303,11 +309,14 @@ const Hero = () => {
           <div className="absolute w-[80%] aspect-square rounded-full bg-linear-to-br from-[#bd922b]/10 to-transparent blur-[100px] animate-pulse-glow" />
           
           <div className="relative group w-full max-w-[400px] aspect-square flex items-center justify-center">
-            <img 
+            <TransparentProductImage 
               key={activeHeroProduct.id}
               src={activeHeroProduct.image_url?.split(',')[0]} 
               alt={activeHeroProduct.name} 
-              className="w-[90%] md:w-full object-contain filter drop-shadow-[0_25px_40px_rgba(0,0,0,0.8)] animate-float transform hover:scale-[1.05] hover:rotate-3 transition-all duration-500 cursor-pointer"
+              className="w-[90%] md:w-full object-contain animate-float transform hover:scale-[1.05] hover:rotate-3 transition-all duration-500 cursor-pointer"
+              style={{
+                filter: 'drop-shadow(0 25px 40px rgba(0,0,0,0.8))'
+              }}
               onClick={handleNextSlide}
             />
             {/* Soft Shadow floor element */}
@@ -325,10 +334,13 @@ const Hero = () => {
           <div className="absolute top-0 right-0 w-[4px] h-full bg-[#bd922b]" />
           
           <p className="text-[10px] font-bold tracking-widest text-[#bd922b] uppercase">NEXT UP</p>
-          <img 
+          <TransparentProductImage 
             src={nextProduct.image_url?.split(',')[0]} 
             alt={nextProduct.name} 
-            className="w-full max-w-[80px] object-contain group-hover:scale-110 transition-transform duration-300 filter drop-shadow-md"
+            className="w-full max-w-[80px] object-contain group-hover:scale-110 transition-transform duration-300"
+            style={{
+              filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))'
+            }}
           />
           <span className="text-[11px] font-extrabold text-white text-center tracking-tight uppercase leading-tight line-clamp-1">
             {nextProduct.name.replace("2018-19", "").replace("2017-18", "").replace("2024", "")}

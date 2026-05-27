@@ -1,8 +1,14 @@
 import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
+import TransparentProductImage from './TransparentProductImage';
 import { Search, ShoppingCart, SlidersHorizontal, X, Plus, Minus } from 'lucide-react';
 
 // Reuse same detail logic as ProductDetail
+const isUploadedImage = (url) => {
+  if (!url) return false;
+  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
+};
+
 const getProductDetails = (product) => {
   if (!product) return [];
   if (product.details && Array.isArray(product.details) && product.details.length > 0) {
@@ -215,10 +221,13 @@ const Store = () => {
                   className="aspect-square bg-linear-to-b from-white/3 to-transparent flex items-center justify-center p-3 relative overflow-hidden cursor-pointer"
                 >
                   <div className="absolute w-[60%] aspect-square rounded-full bg-linear-to-br from-[#bd922b]/5 to-transparent blur-2xl group-hover:bg-[#bd922b]/10 transition-colors duration-500" />
-                  <img
+                  <TransparentProductImage
                     src={product.image_url?.split(',')[0]}
                     alt={product.name}
-                    className="w-[85%] object-contain filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.5)] group-hover:scale-108 group-hover:rotate-2 transition-transform duration-500"
+                    className="w-[85%] object-contain transition-transform duration-500 group-hover:scale-108 group-hover:rotate-2"
+                    style={{
+                      filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.5))'
+                    }}
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
                   <div className="absolute inset-0 w-[200%] h-full bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out pointer-events-none" />
@@ -282,7 +291,7 @@ const Store = () => {
           >
             {/* Product preview header */}
             <div className="flex items-center gap-3 p-4 border-b border-white/5 bg-white/2">
-              <img
+              <TransparentProductImage
                 src={enquiryProduct.image_url?.split(',')[0]}
                 alt={enquiryProduct.name}
                 className="w-14 h-14 object-contain rounded-lg bg-white/5 p-1 border border-white/5 shrink-0"

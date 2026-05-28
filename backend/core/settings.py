@@ -82,16 +82,18 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 import os
 
-# Dynamic DB Configuration: Selects PostgreSQL if configuration details are provided,
-# else automatically falls back to standard SQLite for development ease.
-DB_ENGINE = os.environ.get('DB_ENGINE', 'django.db.backends.sqlite3')
-DB_NAME = os.environ.get('DB_NAME', str(BASE_DIR / 'db.sqlite3'))
-DB_USER = os.environ.get('DB_USER', '')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
-DB_HOST = os.environ.get('DB_HOST', 'localhost')
-DB_PORT = os.environ.get('DB_PORT', '5432')
+# Dynamic DB Configuration: Selects Render PostgreSQL by default,
+# and switches automatically between Render internal network and external local client.
+USE_POSTGRES = os.environ.get('USE_POSTGRES', 'True') == 'True'
 
-if DB_ENGINE == 'django.db.backends.postgresql' or os.environ.get('USE_POSTGRES') == 'True':
+if USE_POSTGRES:
+    IS_RENDER = 'RENDER' in os.environ
+    DB_HOST = os.environ.get('DB_HOST', 'dpg-d8buj4rbc2fs738m2po0-a' if IS_RENDER else 'dpg-d8buj4rbc2fs738m2po0-a.singapore-postgres.render.com')
+    DB_NAME = os.environ.get('DB_NAME', 'db_7_10_house')
+    DB_USER = os.environ.get('DB_USER', 'db_7_10_house_user')
+    DB_PASSWORD = os.environ.get('DB_PASSWORD', 'crDPVBPzPn2k83h24FbnWcOwAHREpbyp')
+    DB_PORT = os.environ.get('DB_PORT', '5432')
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, useContext } from 'react';
+import { getBackendBaseUrl } from '../utils/config';
 
 const ShopContext = createContext();
 
@@ -335,7 +336,7 @@ export const ShopProvider = ({ children }) => {
     return `₹${Math.round(val).toLocaleString('en-IN')}`;
   };
 
-  const API_URL = 'http://127.0.0.1:8000/api';
+  const API_URL = `${getBackendBaseUrl()}/api`;
 
   // Fetch Categories & Products
   useEffect(() => {

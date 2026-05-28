@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
+import { getBackendBaseUrl } from '../utils/config';
 
 const isUploadedImage = (url) => {
   if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
+  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000') || url.includes('onrender.com');
 };
 
 const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
   // Prepend backend base URL if it's a relative media URL from Django
   const getAbsoluteUrl = (url) => {
     if (url && url.startsWith('/media/')) {
-      return `http://127.0.0.1:8000${url}`;
+      return `${getBackendBaseUrl()}${url}`;
     }
     return url;
   };

@@ -16,11 +16,6 @@ import interMiamiLogo from '../club logo/inter_miami.jpeg';
 import liverpoolLogo from '../club logo/liverpool.jpeg';
 import santosLogo from '../club logo/santos.jpeg';
 
-const isUploadedImage = (url) => {
-  if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
-};
-
 // Premium dynamic canvas background remover to strip white JPEG backgrounds while preserving inner white graphics.
 const LogoImage = ({ src, alt, className }) => {
   const [processedSrc, setProcessedSrc] = useState(src);

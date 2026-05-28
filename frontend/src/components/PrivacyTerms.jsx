@@ -8,10 +8,8 @@ import {
   ArrowLeft, 
   Mail, 
   MapPin,
-  ExternalLink,
   BookOpen,
-  Eye,
-  CheckCircle2
+  Eye
 } from 'lucide-react';
 
 const PrivacyTerms = () => {

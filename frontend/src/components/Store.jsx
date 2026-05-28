@@ -3,12 +3,6 @@ import { useShop } from '../context/ShopContext';
 import TransparentProductImage from './TransparentProductImage';
 import { Search, ShoppingCart, SlidersHorizontal, X, Plus, Minus } from 'lucide-react';
 
-// Reuse same detail logic as ProductDetail
-const isUploadedImage = (url) => {
-  if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
-};
-
 const getProductDetails = (product) => {
   if (!product) return [];
   if (product.details && Array.isArray(product.details) && product.details.length > 0) {

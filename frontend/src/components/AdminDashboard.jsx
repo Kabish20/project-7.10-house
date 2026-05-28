@@ -6,11 +6,6 @@ import {
   Trash2, Sparkles, CheckCircle2, TrendingUp, X, Pencil
 } from 'lucide-react';
 
-const isUploadedImage = (url) => {
-  if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
-};
-
 const AdminDashboard = () => {
   const {
     products,

@@ -531,7 +531,9 @@ export const ShopProvider = ({ children }) => {
             errorMsg = errorDetails;
           }
         }
-      } catch {}
+      } catch {
+        // response body is not JSON; fallback to default error message
+      }
       
       return { success: false, message: errorMsg };
     } catch {
@@ -586,7 +588,9 @@ export const ShopProvider = ({ children }) => {
             errorMsg = errorDetails;
           }
         }
-      } catch {}
+      } catch {
+        // response body is not JSON; fallback to default error message
+      }
       
       return { success: false, message: errorMsg };
     } catch {

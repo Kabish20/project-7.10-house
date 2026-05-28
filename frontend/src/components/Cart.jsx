@@ -3,11 +3,6 @@ import { useShop } from '../context/ShopContext';
 import TransparentProductImage from './TransparentProductImage';
 import { X, Plus, Minus, Trash2, ShoppingBag, Sparkles, CheckCircle } from 'lucide-react';
 
-const isUploadedImage = (url) => {
-  if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
-};
-
 const Cart = () => {
   const { 
     cart, 

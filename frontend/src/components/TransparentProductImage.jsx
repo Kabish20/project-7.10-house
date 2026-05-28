@@ -1,23 +1,39 @@
 import { useState, useEffect } from 'react';
 
-export const isUploadedImage = (url) => {
+const isUploadedImage = (url) => {
   if (!url) return false;
   return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
 };
 
 const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
-  const [processedSrc, setProcessedSrc] = useState(src);
+  // Prepend backend base URL if it's a relative media URL from Django
+  const getAbsoluteUrl = (url) => {
+    if (url && url.startsWith('/media/')) {
+      return `http://127.0.0.1:8000${url}`;
+    }
+    return url;
+  };
+
+  const absoluteSrc = getAbsoluteUrl(src);
+
+  const [prevSrc, setPrevSrc] = useState(absoluteSrc);
+  const [processedSrc, setProcessedSrc] = useState(absoluteSrc);
+
+  // Sync state during render to avoid synchronous useEffect setState calls
+  if (absoluteSrc !== prevSrc) {
+    setPrevSrc(absoluteSrc);
+    setProcessedSrc(absoluteSrc);
+  }
 
   useEffect(() => {
-    if (!src || !isUploadedImage(src)) {
-      setProcessedSrc(src);
+    if (!absoluteSrc || !isUploadedImage(absoluteSrc)) {
       return;
     }
 
     let active = true;
     const img = new Image();
     img.crossOrigin = "anonymous";
-    img.src = src;
+    img.src = absoluteSrc;
     
     img.onload = () => {
       if (!active) return;
@@ -71,19 +87,19 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
         setProcessedSrc(canvas.toDataURL('image/png'));
       } catch (err) {
         console.error("Chroma key processing failed:", err);
-        setProcessedSrc(src); // fallback to original
+        setProcessedSrc(absoluteSrc); // fallback to original absolute URL
       }
     };
 
     img.onerror = () => {
       if (!active) return;
-      setProcessedSrc(src);
+      setProcessedSrc(absoluteSrc); // fallback to original absolute URL
     };
 
     return () => {
       active = false;
     };
-  }, [src]);
+  }, [absoluteSrc]);
 
   return (
     <img 

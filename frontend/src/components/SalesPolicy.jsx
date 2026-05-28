@@ -1,13 +1,10 @@
 import { useShop } from '../context/ShopContext';
 import { 
   Tag, 
-  Package, 
-  CreditCard, 
   Truck, 
   RotateCcw, 
   CheckCircle2, 
   Users, 
-  AlertTriangle, 
   Mail, 
   ArrowLeft, 
   ShieldCheck, 

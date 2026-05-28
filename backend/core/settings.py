@@ -159,4 +159,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Trigger server reload after successful database migrations and seeding
+
+
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Mail, MapPin, Send, CheckCircle2, ShieldAlert } from 'lucide-react';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -73,16 +73,7 @@ const Contact = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-4 items-start">
-                  <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-[#bd922b] shrink-0">
-                    <Phone className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-white font-extrabold text-xs uppercase tracking-tight">VIP Hotline Support</p>
-                    <p className="text-white font-semibold text-[13px] mt-0.5">+1 (800) 555-7100</p>
-                    <p className="text-gray-500 text-[10px] uppercase mt-1">Mon - Fri • 9:00 AM - 6:00 PM EST</p>
-                  </div>
-                </div>
+
 
                 <div className="flex gap-4 items-start">
                   <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-[#bd922b] shrink-0">

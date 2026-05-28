@@ -5,12 +5,14 @@ import About from './components/About';
 import Contact from './components/Contact';
 import ProductDetail from './components/ProductDetail';
 import AdminDashboard from './components/AdminDashboard';
+import PrivacyTerms from './components/PrivacyTerms';
+import SalesPolicy from './components/SalesPolicy';
 import Cart from './components/Cart';
 import { ShopProvider, useShop } from './context/ShopContext';
 import { ShieldCheck, Truck, RefreshCw } from 'lucide-react';
 
 const MainLayout = () => {
-  const { activeView } = useShop();
+  const { activeView, setActiveView } = useShop();
 
   return (
     <div className="relative min-h-screen flex flex-col justify-between">
@@ -24,6 +26,8 @@ const MainLayout = () => {
           {activeView === 'contact' && <Contact />}
           {activeView === 'product-detail' && <ProductDetail />}
           {activeView === 'admin' && <AdminDashboard />}
+          {activeView === 'privacy-terms' && <PrivacyTerms />}
+          {activeView === 'sales-policy' && <SalesPolicy />}
         </div>
       </main>
 
@@ -128,8 +132,24 @@ const MainLayout = () => {
         <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-center text-[10px]">
           <p>© 2026 7.10 HOUSE APPAREL INC. DEVELOPED UNDER PROFESSIONAL AUDITING STANDARDS.</p>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-white transition-colors">PRIVACY TERMS</a>
-            <a href="#" className="hover:text-white transition-colors">SALES POLICY</a>
+            <button 
+              onClick={() => {
+                setActiveView('privacy-terms');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} 
+              className="hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
+            >
+              PRIVACY TERMS
+            </button>
+            <button 
+              onClick={() => {
+                setActiveView('sales-policy');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} 
+              className="hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0"
+            >
+              SALES POLICY
+            </button>
             <a href="#" className="hover:text-white transition-colors">SUPPORT DESK</a>
           </div>
         </div>

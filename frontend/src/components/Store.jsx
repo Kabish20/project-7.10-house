@@ -105,12 +105,17 @@ const Store = () => {
         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.category_name && product.category_name.toLowerCase().includes(searchQuery.toLowerCase()));
 
-      return matchCategory && matchSearch;
+      // Filter by stock status if selected
+      const matchStock =
+        sortBy === 'in-stock' ? (product.in_stock !== false) :
+        sortBy === 'out-of-stock' ? (product.in_stock === false) :
+        true;
+
+      return matchCategory && matchSearch && matchStock;
     })
     .sort((a, b) => {
       if (sortBy === 'price-low') return a.price - b.price;
       if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'rating') return b.rating - a.rating;
       return 0;
     });
 
@@ -184,7 +189,8 @@ const Store = () => {
                 <option value="default">Sort: Recommended</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
-                <option value="rating">Rating: Popularity</option>
+                <option value="in-stock">Stock: In Stock</option>
+                <option value="out-of-stock">Stock: Out of Stock</option>
               </select>
               <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -208,6 +214,12 @@ const Store = () => {
                 <span className="absolute top-3 left-3 z-10 px-1.5 py-0.5 bg-black/65 text-gray-400 text-[7px] font-bold tracking-widest rounded-md uppercase border border-white/5">
                   {product.category_name || 'KIT'}
                 </span>
+
+                {product.in_stock === false && (
+                  <span className="absolute top-3 right-3 z-10 px-1.5 py-0.5 bg-rose-500/90 text-white text-[7px] font-black tracking-widest rounded-md uppercase border border-rose-400/20 animate-pulse">
+                    OUT OF STOCK
+                  </span>
+                )}
 
                 {/* Jersey Presentation Area */}
                 <div 
@@ -247,8 +259,13 @@ const Store = () => {
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={(e) => { e.stopPropagation(); openEnquiryModal(product); }}
-                          className="p-1.5 bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white rounded-lg transition-all duration-300 border border-[#25D366]/20 cursor-pointer"
-                          title="WhatsApp Enquire"
+                          disabled={product.in_stock === false}
+                          className={`p-1.5 rounded-lg transition-all duration-300 border cursor-pointer ${
+                            product.in_stock !== false
+                              ? "bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-white border-[#25D366]/20"
+                              : "bg-gray-500/10 text-gray-500 border-gray-500/20 cursor-not-allowed opacity-50"
+                          }`}
+                          title={product.in_stock !== false ? "WhatsApp Enquire" : "Out of Stock"}
                         >
                           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                             <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.5-5.739-1.453L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.114-2.905-6.99C16.257 1.875 13.777.844 11.15.845c-5.448 0-9.88 4.417-9.885 9.866-.001 1.745.467 3.447 1.353 4.966L1.65 21.957l6.597-1.73zM17.13 15.34c-.287-.144-1.696-.838-1.959-.933-.263-.096-.454-.144-.645.144-.19.287-.736.933-.903 1.122-.167.19-.335.216-.622.072-2.828-1.415-4.665-2.73-6.524-5.922-.167-.287-.013-.443.13-.586.13-.13.287-.335.43-.502.144-.167.19-.287.287-.478.096-.191.048-.36-.024-.502-.072-.143-.645-1.554-.884-2.128-.233-.56-.47-.482-.645-.491-.167-.008-.358-.01-.55-.01s-.502.072-.765.358c-.263.287-1.004.981-1.004 2.392s1.028 2.774 1.171 2.965c.143.19 2.023 3.09 4.901 4.33.684.295 1.218.471 1.634.603.687.218 1.312.187 1.808.113.553-.083 1.696-.693 1.936-1.362.24-.669.24-1.242.167-1.362-.072-.12-.263-.19-.55-.335z"/>
@@ -256,8 +273,13 @@ const Store = () => {
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                          className="p-1.5 bg-white/5 hover:bg-linear-to-r hover:from-[#bd922b] hover:to-[#E3C488] text-white hover:text-black rounded-lg transition-all duration-300 border border-white/5 cursor-pointer"
-                          title="Add to bag"
+                          disabled={product.in_stock === false}
+                          className={`p-1.5 rounded-lg transition-all duration-300 border cursor-pointer ${
+                            product.in_stock !== false
+                              ? "bg-white/5 hover:bg-linear-to-r hover:from-[#bd922b] hover:to-[#E3C488] text-white hover:text-black border-white/5"
+                              : "bg-gray-500/10 text-gray-500 border-gray-500/20 cursor-not-allowed opacity-50"
+                          }`}
+                          title={product.in_stock !== false ? "Add to bag" : "Out of Stock"}
                         >
                           <ShoppingCart className="w-3.5 h-3.5" />
                         </button>

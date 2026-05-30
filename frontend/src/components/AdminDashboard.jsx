@@ -39,6 +39,7 @@ const AdminDashboard = () => {
     rating: '5.00',
     colors: 'Red, Blue',
     is_featured: false,
+    in_stock: true,
     stats: {
       ranking: 'N/A',
       founded: '1900',
@@ -212,6 +213,7 @@ const AdminDashboard = () => {
       colors: product.colors,
       rating: String(product.rating),
       is_featured: product.is_featured,
+      in_stock: product.in_stock !== undefined ? product.in_stock : true,
     });
     
     // Split comma-separated URLs from backend into front and back image inputs
@@ -237,6 +239,7 @@ const AdminDashboard = () => {
       colors: editProduct.colors,
       rating: parseFloat(editProduct.rating || 5),
       is_featured: editProduct.is_featured,
+      in_stock: editProduct.in_stock,
       image_url: imageUrlField,
     };
     const res = await updateProduct(editProduct.id, payload);
@@ -291,6 +294,7 @@ const AdminDashboard = () => {
         rating: '5.00',
         colors: 'Red, Blue',
         is_featured: false,
+        in_stock: true,
         stats: {
           ranking: 'N/A',
           founded: '1900',
@@ -552,6 +556,13 @@ const AdminDashboard = () => {
                             FEATURED
                           </span>
                         )}
+                        <span className={`px-2 py-0.5 ml-1.5 text-[8px] rounded border font-extrabold ${
+                          p.in_stock
+                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                        }`}>
+                          {p.in_stock ? 'IN STOCK' : 'OUT OF STOCK'}
+                        </span>
                       </td>
                       <td className="p-4 text-[#bd922b]">{formatPrice(p.price)}</td>
                       <td className="p-4 text-gray-500 text-[9px]">{p.colors}</td>
@@ -826,6 +837,37 @@ const AdminDashboard = () => {
                 />
               </div>
 
+              {/* Stock Status Buttons Workflow */}
+              <div className="space-y-1 bg-white/2 p-2.5 rounded-lg border border-white/5">
+                <label className="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest block mb-1">
+                  Catalog Availability (Stock Status)
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewProduct({ ...newProduct, in_stock: true })}
+                    className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-wider transition-all border cursor-pointer ${
+                      newProduct.in_stock
+                        ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-400 shadow-md shadow-emerald-500/5'
+                        : 'bg-white/3 border-white/5 text-gray-500 hover:text-gray-400'
+                    }`}
+                  >
+                    ● Active (In Stock)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewProduct({ ...newProduct, in_stock: false })}
+                    className={`flex-1 py-2 rounded-lg font-black text-[10px] uppercase tracking-wider transition-all border cursor-pointer ${
+                      !newProduct.in_stock
+                        ? 'bg-rose-500/10 border-rose-500/35 text-rose-400 shadow-md shadow-rose-500/5'
+                        : 'bg-white/3 border-white/5 text-gray-500 hover:text-gray-400'
+                    }`}
+                  >
+                    ○ Inactive (Out of Stock)
+                  </button>
+                </div>
+              </div>
+
               {/* Advanced UI Toggle: Feature Slider */}
               <div className="flex items-center gap-2 bg-white/2 p-2 rounded-lg border border-white/5">
                 <input
@@ -1057,6 +1099,37 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+
+              {/* Stock Status Edit Buttons Workflow */}
+              <div className="space-y-1.5 bg-white/2 p-3.5 rounded-xl border border-white/5">
+                <label className="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest block mb-1">
+                  Catalog Availability (Stock Status)
+                </label>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditProduct({ ...editProduct, in_stock: true })}
+                    className={`flex-1 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all border cursor-pointer ${
+                      editProduct.in_stock
+                        ? 'bg-emerald-500/10 border-emerald-500/35 text-emerald-400 shadow-md shadow-emerald-500/5'
+                        : 'bg-white/3 border-white/5 text-gray-500 hover:text-gray-400'
+                    }`}
+                  >
+                    ● Active (In Stock)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditProduct({ ...editProduct, in_stock: false })}
+                    className={`flex-1 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all border cursor-pointer ${
+                      !editProduct.in_stock
+                        ? 'bg-rose-500/10 border-rose-500/35 text-rose-400 shadow-md shadow-rose-500/5'
+                        : 'bg-white/3 border-white/5 text-gray-500 hover:text-gray-400'
+                    }`}
+                  >
+                    ○ Inactive (Out of Stock)
+                  </button>
                 </div>
               </div>
 

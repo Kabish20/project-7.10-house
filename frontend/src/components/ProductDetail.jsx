@@ -248,9 +248,18 @@ const ProductDetail = () => {
             
             {/* Header info */}
             <div className="space-y-1">
-              <span className="px-1.5 py-0.5 bg-white/5 text-gray-400 text-[7px] font-extrabold tracking-widest rounded uppercase border border-white/5">
-                {activeHeroProduct.category_name || 'AUTHENTIC APPAREL'}
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="px-1.5 py-0.5 bg-white/5 text-gray-400 text-[7px] font-extrabold tracking-widest rounded uppercase border border-white/5">
+                  {activeHeroProduct.category_name || 'AUTHENTIC APPAREL'}
+                </span>
+                <span className={`px-1.5 py-0.5 text-[7px] font-black tracking-widest rounded uppercase border ${
+                  activeHeroProduct.in_stock !== false
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse'
+                }`}>
+                  {activeHeroProduct.in_stock !== false ? '● In Stock' : '○ Out of Stock'}
+                </span>
+              </div>
               <h1 className="text-white font-black text-base uppercase tracking-tight leading-snug">
                 {activeHeroProduct.name}
               </h1>
@@ -343,28 +352,39 @@ const ProductDetail = () => {
                 {/* Add to Cart button */}
                 <button
                   onClick={handleAddToCart}
-                  disabled={adding}
-                  className="w-full py-2 bg-white text-black font-black text-[10px] uppercase rounded-lg tracking-widest hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-white/5 btn-gold-shimmer"
+                  disabled={adding || activeHeroProduct.in_stock === false}
+                  className={`w-full py-2 font-black text-[10px] uppercase rounded-lg tracking-widest hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-white/5 btn-gold-shimmer ${
+                    activeHeroProduct.in_stock !== false
+                      ? "bg-white text-black"
+                      : "bg-gray-500/10 text-gray-500 border border-gray-500/25 cursor-not-allowed opacity-50 shadow-none"
+                  }`}
                 >
                   {adding ? (
                     <>
                       <div className="w-3 h-3 rounded-full border-2 border-black/30 border-t-black animate-spin" />
                       Adding to Bag...
                     </>
-                  ) : (
+                  ) : activeHeroProduct.in_stock !== false ? (
                     <>
                       <ShoppingBag className="w-3 h-3" />
                       Add to Cart
                     </>
+                  ) : (
+                    "Out of Stock"
                   )}
                 </button>
 
                 {/* WhatsApp Enquire button */}
                 <button
                   onClick={handleWhatsAppEnquire}
-                  className="w-full py-2 bg-linear-to-r from-[#25D366] to-[#20ba5a] text-white font-black text-[10px] uppercase rounded-lg tracking-widest hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[#25D366]/10 btn-gold-shimmer"
+                  disabled={activeHeroProduct.in_stock === false}
+                  className={`w-full py-2 font-black text-[10px] uppercase rounded-lg tracking-widest hover:scale-[1.01] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg btn-gold-shimmer ${
+                    activeHeroProduct.in_stock !== false
+                      ? "bg-linear-to-r from-[#25D366] to-[#20ba5a] text-white shadow-[#25D366]/10"
+                      : "bg-gray-500/10 text-gray-500 border border-gray-500/25 cursor-not-allowed opacity-50 shadow-none"
+                  }`}
                 >
-                  WhatsApp Enquire
+                  {activeHeroProduct.in_stock !== false ? "WhatsApp Enquire" : "Unavailable"}
                 </button>
 
                 {/* SIZE CHART Button */}

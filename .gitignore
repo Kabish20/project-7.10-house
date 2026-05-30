@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django database and dynamic files
+backend/db.sqlite3
+db.sqlite3
+backend/staticfiles/
+staticfiles/
+backend/media/
+media/
+.env
+backend/.env
+frontend/.env
+*.local
+
+# Node and Vite
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Editor and OS directories
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

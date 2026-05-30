@@ -350,15 +350,30 @@ export const ShopProvider = ({ children }) => {
           const productsData = await productsResponse.json();
           const categoriesData = await categoriesResponse.json();
 
-          setProducts(productsData);
-          setCategories(categoriesData);
+          if (productsData && productsData.length > 0) {
+            setProducts(productsData);
+            
+            // Set active hero product
+            const featured = productsData.filter(p => p.is_featured);
+            if (featured.length > 0) {
+              setActiveHeroProduct(featured[0]);
+            } else {
+              setActiveHeroProduct(productsData[0]);
+            }
+          } else {
+            console.warn('API returned empty products, falling back to local fallback data.');
+            setProducts(fallbackProducts);
+            setActiveHeroProduct(fallbackProducts[0]);
+          }
 
-          // Set active hero product
-          const featured = productsData.filter(p => p.is_featured);
-          if (featured.length > 0) {
-            setActiveHeroProduct(featured[0]);
-          } else if (productsData.length > 0) {
-            setActiveHeroProduct(productsData[0]);
+          if (categoriesData && categoriesData.length > 0) {
+            setCategories(categoriesData);
+          } else {
+            setCategories([
+              { id: 1, name: 'Full Sleeve', slug: 'full-sleeve' },
+              { id: 2, name: 'Half Sleeve', slug: 'half-sleeve' },
+              { id: 3, name: 'Five Sleeve', slug: 'five-sleeve' }
+            ]);
           }
         } else {
           throw new Error('API failed, falling back to cached local data.');

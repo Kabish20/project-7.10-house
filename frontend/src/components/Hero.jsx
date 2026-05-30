@@ -144,10 +144,11 @@ const Hero = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  // Filter products that are designated for the featured hero slider
+  // Filter products that are designated for the featured hero slider, fallback to all products if none are featured
   const featuredKits = products.filter(p => p.is_featured);
+  const heroKits = featuredKits.length > 0 ? featuredKits : products;
 
-  if (loading || featuredKits.length === 0) {
+  if (loading || heroKits.length === 0) {
     return (
       <div className="relative min-h-screen w-full bg-[#06070a] overflow-hidden pt-36 flex flex-col justify-between animate-pulse">
         
@@ -223,18 +224,18 @@ const Hero = () => {
 
   // Handle slide transitions
   const handleNextSlide = () => {
-    const currentIndex = featuredKits.findIndex(p => p.id === activeHeroProduct.id);
-    const nextIndex = (currentIndex + 1) % featuredKits.length;
-    setActiveHeroProduct(featuredKits[nextIndex]);
+    const currentIndex = heroKits.findIndex(p => p.id === activeHeroProduct.id);
+    const nextIndex = (currentIndex + 1) % heroKits.length;
+    setActiveHeroProduct(heroKits[nextIndex]);
   };
 
   const getNextProduct = () => {
-    const currentIndex = featuredKits.findIndex(p => p.id === activeHeroProduct.id);
-    const nextIndex = (currentIndex + 1) % featuredKits.length;
-    return featuredKits[nextIndex];
+    const currentIndex = heroKits.findIndex(p => p.id === activeHeroProduct.id);
+    const nextIndex = (currentIndex + 1) % heroKits.length;
+    return heroKits[nextIndex];
   };
 
-  const currentStats = activeHeroProduct.stats || {};
+  const currentStats = activeHeroProduct?.stats || {};
   const nextProduct = getNextProduct();
 
   return (

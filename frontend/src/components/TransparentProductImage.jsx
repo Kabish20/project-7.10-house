@@ -9,6 +9,24 @@ const isUploadedImage = (url) => {
 // Global memory cache to prevent redundant heavy pixel-loop chroma key processing
 const chromaKeyCache = new Map();
 
+const getFallbackTemplateImage = (altText = '', srcUrl = '') => {
+  const text = (altText + ' ' + srcUrl).toLowerCase();
+  
+  if (text.includes('portugal')) return '/portugal_jersey.png';
+  if (text.includes('barcelona') || text.includes('barca')) return '/barca_jersey.png';
+  if (text.includes('inter milan') || text.includes('inter')) return '/inter_jersey.png';
+  if (text.includes('argentina')) return '/arg_jersey.png';
+  if (text.includes('madrid') || text.includes('real madrid')) return '/madrid_jersey.png';
+  if (text.includes('brazil') || text.includes('brasil')) return '/brazil_jersey.png';
+  if (text.includes('nassr') || text.includes('al-nassr')) return '/nassr_jersey.png';
+  if (text.includes('arsenal')) return '/arsenal_jersey.png';
+  if (text.includes('united') || text.includes('manchester united')) return '/united_jersey.png';
+  if (text.includes('milan') || text.includes('ac milan')) return '/inter_jersey.png';
+  if (text.includes('city') || text.includes('man city')) return '/arg_jersey.png';
+  
+  return '/portugal_jersey.png'; // default fallback
+};
+
 const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
   // Prepend backend base URL if it's a relative media URL from Django
   const getAbsoluteUrl = (url) => {
@@ -100,14 +118,15 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
         chromaKeyCache.set(absoluteSrc, processedDataUrl);
         setProcessedSrc(processedDataUrl);
       } catch (err) {
-        console.error("Chroma key processing failed:", err);
-        setProcessedSrc(absoluteSrc); // fallback to original absolute URL
+        console.error("Chroma key processing failed, using fallback:", err);
+        setProcessedSrc(getFallbackTemplateImage(alt, absoluteSrc));
       }
     };
 
     img.onerror = () => {
       if (!active) return;
-      setProcessedSrc(absoluteSrc); // fallback to original absolute URL
+      console.warn(`Image failed to load: ${absoluteSrc}, applying self-healing fallback.`);
+      setProcessedSrc(getFallbackTemplateImage(alt, absoluteSrc));
     };
 
     return () => {
@@ -121,6 +140,12 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
       alt={alt} 
       className={className} 
       style={style}
+      onError={(e) => {
+        const fallback = getFallbackTemplateImage(alt, absoluteSrc);
+        if (e.target.src !== window.location.origin + fallback && e.target.src !== fallback) {
+          setProcessedSrc(fallback);
+        }
+      }}
       {...props} 
     />
   );

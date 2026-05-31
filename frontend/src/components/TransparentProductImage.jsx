@@ -6,6 +6,9 @@ const isUploadedImage = (url) => {
   return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000') || url.includes('onrender.com');
 };
 
+// Global memory cache to prevent redundant heavy pixel-loop chroma key processing
+const chromaKeyCache = new Map();
+
 const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
   // Prepend backend base URL if it's a relative media URL from Django
   const getAbsoluteUrl = (url) => {
@@ -18,16 +21,24 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
   const absoluteSrc = getAbsoluteUrl(src);
 
   const [prevSrc, setPrevSrc] = useState(absoluteSrc);
-  const [processedSrc, setProcessedSrc] = useState(absoluteSrc);
+  const [processedSrc, setProcessedSrc] = useState(() => {
+    return chromaKeyCache.get(absoluteSrc) || absoluteSrc;
+  });
 
   // Sync state during render to avoid synchronous useEffect setState calls
   if (absoluteSrc !== prevSrc) {
     setPrevSrc(absoluteSrc);
-    setProcessedSrc(absoluteSrc);
+    setProcessedSrc(chromaKeyCache.get(absoluteSrc) || absoluteSrc);
   }
 
   useEffect(() => {
     if (!absoluteSrc || !isUploadedImage(absoluteSrc)) {
+      return;
+    }
+
+    // Skip canvas processing entirely if we have a cache hit
+    if (chromaKeyCache.has(absoluteSrc)) {
+      setProcessedSrc(chromaKeyCache.get(absoluteSrc));
       return;
     }
 
@@ -85,7 +96,9 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
         }
 
         ctx.putImageData(imgData, 0, 0);
-        setProcessedSrc(canvas.toDataURL('image/png'));
+        const processedDataUrl = canvas.toDataURL('image/png');
+        chromaKeyCache.set(absoluteSrc, processedDataUrl);
+        setProcessedSrc(processedDataUrl);
       } catch (err) {
         console.error("Chroma key processing failed:", err);
         setProcessedSrc(absoluteSrc); // fallback to original absolute URL

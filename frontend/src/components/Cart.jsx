@@ -27,7 +27,7 @@ const Cart = () => {
         ? `\n    └─ Customization: *${item.customDetails?.name} #${item.customDetails?.number}*` 
         : '';
       
-      const rawImageUrl = item.product.image_url?.split(',')[0] || '';
+      const rawImageUrl = item.product.image_url?.split(/,(?=data:|https?:|\/media)/)[0] || '';
       const imageLink = rawImageUrl.startsWith('http')
         ? rawImageUrl
         : `${window.location.origin}${rawImageUrl}`;
@@ -119,7 +119,7 @@ const Cart = () => {
                     {/* Item Image */}
                     <div className="w-16 h-16 bg-white/3 rounded-lg overflow-hidden flex items-center justify-center p-2 border border-white/5">
                       <TransparentProductImage 
-                        src={item.product.image_url?.split(',')[0]} 
+                        src={item.product.image_url?.split(/,(?=data:|https?:|\/media)/)[0]} 
                         alt={item.product.name} 
                         className="w-full h-full object-contain filter drop-shadow-md" 
                       />

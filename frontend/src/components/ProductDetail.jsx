@@ -153,7 +153,7 @@ const ProductDetail = () => {
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
 
     // Build image link — use absolute URL if it's a relative path
-    const rawImageUrl = activeHeroProduct.image_url?.split(',')[0] || '';
+    const rawImageUrl = activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0] || '';
     const imageLink = rawImageUrl.startsWith('http')
       ? rawImageUrl
       : `${window.location.origin}${rawImageUrl}`;
@@ -211,12 +211,12 @@ const ProductDetail = () => {
             {/* Column 1: Front View */}
             <div className="glass-panel rounded-3xl overflow-hidden aspect-3/4 flex items-center justify-center p-8 border border-white/5 relative bg-[#090b11]/70 group">
               {/* Green artificial grass/spotlight background texture layer simulating user request */}
-              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(',')[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/80 to-[#07080d]' : 'bg-radial-gradient from-emerald-950/15 via-[#07080d]/60 to-[#07080d]'}`} />
+              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/80 to-[#07080d]' : 'bg-radial-gradient from-emerald-950/15 via-[#07080d]/60 to-[#07080d]'}`} />
               <div className="absolute top-4 left-4 z-10 px-2.5 py-0.5 bg-black/65 text-[#bd922b] text-[8px] font-black tracking-widest rounded-md uppercase border border-[#bd922b]/20">
                 Front View
               </div>
               <TransparentProductImage 
-                src={activeHeroProduct.image_url?.split(',')[0]} 
+                src={activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]} 
                 alt={`${activeHeroProduct.name} Front View`} 
                 className="w-[90%] object-contain group-hover:scale-103 transition-transform duration-500"
                 style={{
@@ -227,14 +227,14 @@ const ProductDetail = () => {
 
             {/* Column 2: Back View */}
             <div className="glass-panel rounded-3xl overflow-hidden aspect-3/4 flex items-center justify-center p-8 border border-white/5 relative bg-[#0a0c14]/70 group">
-              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(',')[1] || activeHeroProduct.image_url?.split(',')[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/85 to-[#07080d]' : 'bg-radial-gradient from-emerald-900/10 via-[#07080d]/75 to-[#07080d]'}`} />
+              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[1] || activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/85 to-[#07080d]' : 'bg-radial-gradient from-emerald-900/10 via-[#07080d]/75 to-[#07080d]'}`} />
               <div className="absolute top-4 left-4 z-10 px-2.5 py-0.5 bg-black/65 text-gray-400 text-[8px] font-black tracking-widest rounded-md uppercase border border-white/5">
                 Back View
               </div>
               <TransparentProductImage 
-                src={activeHeroProduct.image_url?.split(',')[1] || activeHeroProduct.image_url?.split(',')[0]} 
+                src={activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[1] || activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]} 
                 alt={`${activeHeroProduct.name} Back View`} 
-                className={`w-[90%] object-contain group-hover:scale-105 transition-transform duration-500 ${!activeHeroProduct.image_url?.split(',')[1] ? 'scale-x-[-1]' : ''}`}
+                className={`w-[90%] object-contain group-hover:scale-105 transition-transform duration-500 ${!activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[1] ? 'scale-x-[-1]' : ''}`}
                 style={{
                   filter: 'saturate(1.1) drop-shadow(0 20px 30px rgba(0,0,0,0.7))'
                 }}

@@ -60,7 +60,7 @@ const Store = () => {
     const details = getProductDetails(enquiryProduct);
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
 
-    const rawImageUrl = enquiryProduct.image_url?.split(',')[0] || '';
+    const rawImageUrl = enquiryProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0] || '';
     const imageLink = rawImageUrl.startsWith('http')
       ? rawImageUrl
       : `${window.location.origin}${rawImageUrl}`;
@@ -228,7 +228,7 @@ const Store = () => {
                 >
                   <div className="absolute w-[60%] aspect-square rounded-full bg-linear-to-br from-[#bd922b]/5 to-transparent blur-2xl group-hover:bg-[#bd922b]/10 transition-colors duration-500" />
                   <TransparentProductImage
-                    src={product.image_url?.split(',')[0]}
+                    src={product.image_url?.split(/,(?=data:|https?:|\/media)/)[0]}
                     alt={product.name}
                     className="w-[85%] object-contain transition-transform duration-500 group-hover:scale-108 group-hover:rotate-2"
                     style={{
@@ -308,7 +308,7 @@ const Store = () => {
             {/* Product preview header */}
             <div className="flex items-center gap-3 p-4 border-b border-white/5 bg-white/2">
               <TransparentProductImage
-                src={enquiryProduct.image_url?.split(',')[0]}
+                src={enquiryProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]}
                 alt={enquiryProduct.name}
                 className="w-14 h-14 object-contain rounded-lg bg-white/5 p-1 border border-white/5 shrink-0"
               />

@@ -57,7 +57,8 @@ class AdminLoginView(APIView):
 class ImageUploadView(APIView):
     """
     Accepts a JSON body: { "images": ["data:image/png;base64,...", ...] }
-    Saves each image to media/jerseys/ and returns their /media/ URLs.
+    Returns the base64 data URLs directly for 100% persistent database storage.
+    Attempts to save to local media as a local backup where possible.
     """
     parser_classes = [JSONParser]
 
@@ -66,32 +67,28 @@ class ImageUploadView(APIView):
         if not images_b64:
             return Response({'error': 'No images provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
-        os.makedirs(jerseys_dir, exist_ok=True)
-
-        urls = []
-        for data_url in images_b64:
-            try:
-                # Strip the data URL prefix: "data:image/png;base64,<data>"
+        # Attempt to save a local backup copy on the local filesystem if writable
+        try:
+            jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
+            os.makedirs(jerseys_dir, exist_ok=True)
+            for data_url in images_b64:
                 if ';base64,' in data_url:
                     header, encoded = data_url.split(';base64,', 1)
-                    ext = header.split('/')[-1]   # e.g. "png", "jpeg", "webp"
+                    ext = header.split('/')[-1]
                     if ext not in ('png', 'jpg', 'jpeg', 'webp', 'gif'):
                         ext = 'png'
                 else:
                     encoded = data_url
                     ext = 'png'
-
                 img_bytes = base64.b64decode(encoded)
                 filename = f"{uuid.uuid4().hex}.{ext}"
                 filepath = os.path.join(jerseys_dir, filename)
-
                 with open(filepath, 'wb') as f:
                     f.write(img_bytes)
+        except Exception:
+            # Silently fallback to base64 if filesystem is read-only (like in Render runtime containers)
+            pass
 
-                urls.append(f"/media/jerseys/{filename}")
-            except Exception as e:
-                return Response({'error': f'Failed to process image: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({'urls': urls}, status=status.HTTP_201_CREATED)
+        # Return the original base64 strings so they are saved directly in the PostgreSQL DB
+        return Response({'urls': images_b64}, status=status.HTTP_201_CREATED)
 

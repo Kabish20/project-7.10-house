@@ -83,6 +83,40 @@ const AdminDashboard = () => {
   const markup = costVal > 0 ? ((profit / costVal) * 100) : 0;
   const profitHealth = markup >= 40 ? 'good' : markup >= 20 ? 'ok' : markup > 0 ? 'low' : 'none';
 
+  // Client-side image compression and downscaling helper
+  const compressImageBase64 = (base64Str, fileType = 'image/jpeg', maxDim = 800, quality = 0.7) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width;
+        let h = img.height;
+        
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        
+        const exportType = fileType === 'image/png' ? 'image/png' : 'image/jpeg';
+        resolve(canvas.toDataURL(exportType, exportType === 'image/jpeg' ? quality : undefined));
+      };
+      img.onerror = () => {
+        resolve(base64Str);
+      };
+    });
+  };
+
   // Front and Back Image Upload handler
   const handleUploadImage = async (e, side) => {
     const file = e?.target?.files?.[0];
@@ -103,10 +137,11 @@ const AdminDashboard = () => {
       });
 
       const base64Url = await base64Promise;
+      const compressedBase64 = await compressImageBase64(base64Url, file.type);
       const res = await fetch(`${API_URL}/upload-images/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: [base64Url] }),
+        body: JSON.stringify({ images: [compressedBase64] }),
       });
 
       if (res.ok) {
@@ -149,10 +184,11 @@ const AdminDashboard = () => {
       });
 
       const base64Url = await base64Promise;
+      const compressedBase64 = await compressImageBase64(base64Url, file.type);
       const res = await fetch(`${API_URL}/upload-images/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: [base64Url] }),
+        body: JSON.stringify({ images: [compressedBase64] }),
       });
 
       if (res.ok) {
@@ -216,8 +252,8 @@ const AdminDashboard = () => {
       in_stock: product.in_stock !== undefined ? product.in_stock : true,
     });
     
-    // Split comma-separated URLs from backend into front and back image inputs
-    const urls = product.image_url ? product.image_url.split(',').map(u => u.trim()).filter(Boolean) : [];
+    // Split URLs safely using a look-ahead that avoids splitting base64 data strings
+    const urls = product.image_url ? product.image_url.split(/,(?=data:|https?:|\/media)/).map(u => u.trim()).filter(Boolean) : [];
     setEditFrontImageUrl(urls[0] || '/barca_jersey.png');
     setEditBackImageUrl(urls[1] || '');
   };
@@ -537,7 +573,7 @@ const AdminDashboard = () => {
                       <td className="p-4 flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/3 rounded-lg overflow-hidden border border-white/5 p-1 flex items-center justify-center shrink-0">
                           <TransparentProductImage 
-                            src={p.image_url?.split(',')[0]} 
+                            src={p.image_url?.split(/,(?=data:|https?:|\/media)/)[0]} 
                             alt={p.name} 
                             className="w-full h-full object-contain filter drop-shadow-sm" 
                           />

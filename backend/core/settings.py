@@ -82,12 +82,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 import os
 
-# Dynamic DB Configuration: Selects Render PostgreSQL by default,
-# and switches automatically between Render internal network and external local client.
-USE_POSTGRES = os.environ.get('USE_POSTGRES', 'True') == 'True'
+IS_RENDER = 'RENDER' in os.environ
+# Dynamic DB Configuration: Selects Render PostgreSQL in production by default,
+# and SQLite locally to keep development extremely fast.
+USE_POSTGRES = os.environ.get('USE_POSTGRES', 'True' if IS_RENDER else 'False') == 'True'
 
 if USE_POSTGRES:
-    IS_RENDER = 'RENDER' in os.environ
     DB_HOST = os.environ.get('DB_HOST', 'dpg-d8buj4rbc2fs738m2po0-a' if IS_RENDER else 'dpg-d8buj4rbc2fs738m2po0-a.singapore-postgres.render.com')
     DB_NAME = os.environ.get('DB_NAME', 'db_7_10_house')
     DB_USER = os.environ.get('DB_USER', 'db_7_10_house_user')

@@ -307,7 +307,7 @@ const Hero = () => {
           <div className="relative group w-full max-w-[400px] aspect-square flex items-center justify-center">
             <TransparentProductImage 
               key={activeHeroProduct.id}
-              src={activeHeroProduct.image_url?.split(',')[0]} 
+              src={activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]} 
               alt={activeHeroProduct.name} 
               className="w-[90%] md:w-full object-contain animate-float transform hover:scale-[1.05] hover:rotate-3 transition-all duration-500 cursor-pointer"
               style={{
@@ -331,7 +331,7 @@ const Hero = () => {
           
           <p className="text-[10px] font-bold tracking-widest text-[#bd922b] uppercase">NEXT UP</p>
           <TransparentProductImage 
-            src={nextProduct.image_url?.split(',')[0]} 
+            src={nextProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]} 
             alt={nextProduct.name} 
             className="w-full max-w-[80px] object-contain group-hover:scale-110 transition-transform duration-300"
             style={{

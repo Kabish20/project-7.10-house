@@ -341,8 +341,45 @@ export const ShopProvider = ({ children }) => {
   // Fetch Categories & Products
   useEffect(() => {
     const fetchData = async () => {
+      // 1. Try to load from localStorage first for instant load
+      const cachedProducts = localStorage.getItem('shop_products');
+      const cachedCategories = localStorage.getItem('shop_categories');
+      let hasCache = false;
+
+      if (cachedProducts) {
+        try {
+          const parsed = JSON.parse(cachedProducts);
+          if (parsed && parsed.length > 0) {
+            setProducts(parsed);
+            const featured = parsed.filter(p => p.is_featured);
+            if (featured.length > 0) {
+              setActiveHeroProduct(featured[0]);
+            } else {
+              setActiveHeroProduct(parsed[0]);
+            }
+            setLoading(false);
+            hasCache = true;
+          }
+        } catch (e) {
+          console.warn('Failed to parse cached products', e);
+        }
+      }
+
+      if (cachedCategories) {
+        try {
+          const parsed = JSON.parse(cachedCategories);
+          if (parsed && parsed.length > 0) {
+            setCategories(parsed);
+          }
+        } catch (e) {
+          console.warn('Failed to parse cached categories', e);
+        }
+      }
+
       try {
-        setLoading(true);
+        if (!hasCache) {
+          setLoading(true);
+        }
         const productsResponse = await fetch(`${API_URL}/products/`);
         const categoriesResponse = await fetch(`${API_URL}/categories/`);
 
@@ -352,6 +389,7 @@ export const ShopProvider = ({ children }) => {
 
           if (productsData && productsData.length > 0) {
             setProducts(productsData);
+            localStorage.setItem('shop_products', JSON.stringify(productsData));
             
             // Set active hero product
             const featured = productsData.filter(p => p.is_featured);
@@ -368,6 +406,7 @@ export const ShopProvider = ({ children }) => {
 
           if (categoriesData && categoriesData.length > 0) {
             setCategories(categoriesData);
+            localStorage.setItem('shop_categories', JSON.stringify(categoriesData));
           } else {
             setCategories([
               { id: 1, name: 'Full Sleeve', slug: 'full-sleeve' },
@@ -380,13 +419,15 @@ export const ShopProvider = ({ children }) => {
         }
       } catch (err) {
         console.warn('API error, using premium local fallback data:', err);
-        setProducts(fallbackProducts);
-        setCategories([
-          { id: 1, name: 'Full Sleeve', slug: 'full-sleeve' },
-          { id: 2, name: 'Half Sleeve', slug: 'half-sleeve' },
-          { id: 3, name: 'Five Sleeve', slug: 'five-sleeve' }
-        ]);
-        setActiveHeroProduct(fallbackProducts[0]);
+        if (!hasCache) {
+          setProducts(fallbackProducts);
+          setCategories([
+            { id: 1, name: 'Full Sleeve', slug: 'full-sleeve' },
+            { id: 2, name: 'Half Sleeve', slug: 'half-sleeve' },
+            { id: 3, name: 'Five Sleeve', slug: 'five-sleeve' }
+          ]);
+          setActiveHeroProduct(fallbackProducts[0]);
+        }
       } finally {
         setLoading(false);
       }

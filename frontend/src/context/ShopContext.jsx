@@ -509,7 +509,7 @@ export const ShopProvider = ({ children }) => {
       const response = await fetch(`${API_URL}/products/${id}/`, {
         method: 'DELETE',
       });
-      if (response.ok) {
+      if (response.ok || response.status === 404) {
         setProducts((prev) => prev.filter((p) => p.id !== id));
         return { success: true };
       }
@@ -570,7 +570,7 @@ export const ShopProvider = ({ children }) => {
       const response = await fetch(`${API_URL}/custom-requests/${id}/`, {
         method: 'DELETE',
       });
-      if (response.ok) {
+      if (response.ok || response.status === 404) {
         return { success: true };
       }
       return { success: false, message: 'Failed to delete request from database.' };

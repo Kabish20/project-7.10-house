@@ -84,18 +84,18 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
           const diff = g - maxRB;
           
           if (g > 35 && diff > 5 && g > r * 1.10 && g > b * 1.10) {
-            // Saturated grass region -> convert to solid white background
+            // Saturated grass region -> convert to solid grey background
             if (diff > 12 && g > r * 1.20) {
-              data[i] = 255;
-              data[i + 1] = 255;
-              data[i + 2] = 255;
+              data[i] = 240;
+              data[i + 1] = 240;
+              data[i + 2] = 240;
               data[i + 3] = 255;
             } else {
-              // Edge pixels -> blend smoothly to white to create soft margins
+              // Edge pixels -> blend smoothly to grey to create soft margins
               const factor = Math.min(1, Math.max(0, (diff - 5) / 7));
-              data[i] = Math.round(r + (255 - r) * factor);
-              data[i + 1] = Math.round(g + (255 - g) * factor);
-              data[i + 2] = Math.round(b + (255 - b) * factor);
+              data[i] = Math.round(r + (240 - r) * factor);
+              data[i + 1] = Math.round(g + (240 - g) * factor);
+              data[i + 2] = Math.round(b + (240 - b) * factor);
               data[i + 3] = 255;
             }
           }

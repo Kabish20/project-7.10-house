@@ -389,7 +389,11 @@ export const ShopProvider = ({ children }) => {
 
           if (productsData && productsData.length > 0) {
             setProducts(productsData);
-            localStorage.setItem('shop_products', JSON.stringify(productsData));
+            try {
+              localStorage.setItem('shop_products', JSON.stringify(productsData));
+            } catch (e) {
+              console.warn('Failed to cache products to localStorage:', e);
+            }
             
             // Set active hero product
             const featured = productsData.filter(p => p.is_featured);
@@ -406,7 +410,11 @@ export const ShopProvider = ({ children }) => {
 
           if (categoriesData && categoriesData.length > 0) {
             setCategories(categoriesData);
-            localStorage.setItem('shop_categories', JSON.stringify(categoriesData));
+            try {
+              localStorage.setItem('shop_categories', JSON.stringify(categoriesData));
+            } catch (e) {
+              console.warn('Failed to cache categories to localStorage:', e);
+            }
           } else {
             setCategories([
               { id: 1, name: 'Full Sleeve', slug: 'full-sleeve' },

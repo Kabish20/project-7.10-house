@@ -2,6 +2,22 @@ import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import TransparentProductImage from './TransparentProductImage';
 import { Search, ShoppingCart, SlidersHorizontal, X, Plus, Minus } from 'lucide-react';
+import { getBackendBaseUrl } from '../utils/config';
+
+const formatImageLink = (url) => {
+  if (!url) return '';
+  const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
+  if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return '[Custom Uploaded Jersey]';
+  }
+  if (raw.startsWith('http')) {
+    return raw;
+  }
+  if (raw.startsWith('/media/')) {
+    return `${getBackendBaseUrl()}${raw}`;
+  }
+  return `${window.location.origin}${raw}`;
+};
 
 const getProductDetails = (product) => {
   if (!product) return [];
@@ -60,10 +76,7 @@ const Store = () => {
     const details = getProductDetails(enquiryProduct);
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
 
-    const rawImageUrl = enquiryProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0] || '';
-    const imageLink = rawImageUrl.startsWith('http')
-      ? rawImageUrl
-      : `${window.location.origin}${rawImageUrl}`;
+    const imageLink = formatImageLink(enquiryProduct.image_url);
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,

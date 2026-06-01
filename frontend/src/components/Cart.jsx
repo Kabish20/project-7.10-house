@@ -2,6 +2,22 @@ import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import TransparentProductImage from './TransparentProductImage';
 import { X, Plus, Minus, Trash2, ShoppingBag, Sparkles, CheckCircle } from 'lucide-react';
+import { getBackendBaseUrl } from '../utils/config';
+
+const formatImageLink = (url) => {
+  if (!url) return '';
+  const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
+  if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return '[Custom Uploaded Jersey]';
+  }
+  if (raw.startsWith('http')) {
+    return raw;
+  }
+  if (raw.startsWith('/media/')) {
+    return `${getBackendBaseUrl()}${raw}`;
+  }
+  return `${window.location.origin}${raw}`;
+};
 
 const Cart = () => {
   const { 
@@ -27,10 +43,7 @@ const Cart = () => {
         ? `\n    └─ Customization: *${item.customDetails?.name} #${item.customDetails?.number}*` 
         : '';
       
-      const rawImageUrl = item.product.image_url?.split(/,(?=data:|https?:|\/media)/)[0] || '';
-      const imageLink = rawImageUrl.startsWith('http')
-        ? rawImageUrl
-        : `${window.location.origin}${rawImageUrl}`;
+      const imageLink = formatImageLink(item.product.image_url);
 
       return `${idx + 1}. *${item.product.name}*\n    ├─ Size: *${item.size}*\n    ├─ Qty: *${item.quantity}*\n    ├─ Price: *${formatPrice(item.product.price * item.quantity)}* (${formatPrice(item.product.price)} each)${customText}\n    └─ Image: ${imageLink}`;
     }).join('\n\n');

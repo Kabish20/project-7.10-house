@@ -2,6 +2,22 @@ import { useState } from 'react';
 import { useShop } from '../context/ShopContext';
 import TransparentProductImage from './TransparentProductImage';
 import { ShoppingBag, ArrowLeft, Plus, Minus, Ruler } from 'lucide-react';
+import { getBackendBaseUrl } from '../utils/config';
+
+const formatImageLink = (url) => {
+  if (!url) return '';
+  const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
+  if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+    return '[Custom Uploaded Jersey]';
+  }
+  if (raw.startsWith('http')) {
+    return raw;
+  }
+  if (raw.startsWith('/media/')) {
+    return `${getBackendBaseUrl()}${raw}`;
+  }
+  return `${window.location.origin}${raw}`;
+};
 
 const isUploadedImage = (url) => {
   if (!url) return false;
@@ -153,10 +169,7 @@ const ProductDetail = () => {
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
 
     // Build image link — use absolute URL if it's a relative path
-    const rawImageUrl = activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0] || '';
-    const imageLink = rawImageUrl.startsWith('http')
-      ? rawImageUrl
-      : `${window.location.origin}${rawImageUrl}`;
+    const imageLink = formatImageLink(activeHeroProduct.image_url);
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,

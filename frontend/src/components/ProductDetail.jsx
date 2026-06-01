@@ -19,11 +19,6 @@ const formatImageLink = (url) => {
   return `${window.location.origin}${raw}`;
 };
 
-const isUploadedImage = (url) => {
-  if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000');
-};
-
 const getProductDetails = (product) => {
   if (!product) return [];
   if (product.details && Array.isArray(product.details) && product.details.length > 0) {
@@ -223,8 +218,6 @@ const ProductDetail = () => {
             
             {/* Column 1: Front View */}
             <div className="glass-panel rounded-3xl overflow-hidden aspect-3/4 flex items-center justify-center p-8 border border-white/5 relative bg-[#090b11]/70 group">
-              {/* Green artificial grass/spotlight background texture layer simulating user request */}
-              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/80 to-[#07080d]' : 'bg-radial-gradient from-emerald-950/15 via-[#07080d]/60 to-[#07080d]'}`} />
               <div className="absolute top-4 left-4 z-10 px-2.5 py-0.5 bg-black/65 text-[#bd922b] text-[8px] font-black tracking-widest rounded-md uppercase border border-[#bd922b]/20">
                 Front View
               </div>
@@ -240,7 +233,6 @@ const ProductDetail = () => {
 
             {/* Column 2: Back View */}
             <div className="glass-panel rounded-3xl overflow-hidden aspect-3/4 flex items-center justify-center p-8 border border-white/5 relative bg-[#0a0c14]/70 group">
-              <div className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isUploadedImage(activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[1] || activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/)[0]) ? 'bg-radial-gradient from-transparent via-[#07080d]/85 to-[#07080d]' : 'bg-radial-gradient from-emerald-900/10 via-[#07080d]/75 to-[#07080d]'}`} />
               <div className="absolute top-4 left-4 z-10 px-2.5 py-0.5 bg-black/65 text-gray-400 text-[8px] font-black tracking-widest rounded-md uppercase border border-white/5">
                 Back View
               </div>

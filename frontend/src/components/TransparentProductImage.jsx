@@ -57,9 +57,6 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
     img.onload = () => {
       if (!active) return;
       try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
         // Downscale slightly if the image is extremely large to optimize performance
         const maxDim = 800;
         let w = img.width;
@@ -74,11 +71,14 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
           }
         }
 
-        canvas.width = w;
-        canvas.height = h;
-        ctx.drawImage(img, 0, 0, w, h);
+        // 1. Create temporary canvas for transparent cutout
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = w;
+        tempCanvas.height = h;
+        tempCtx.drawImage(img, 0, 0, w, h);
 
-        const imgData = ctx.getImageData(0, 0, w, h);
+        const imgData = tempCtx.getImageData(0, 0, w, h);
         const data = imgData.data;
 
         // BFS background removal & edge feathering
@@ -200,8 +200,26 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
           }
         }
 
-        ctx.putImageData(imgData, 0, 0);
-        const processedDataUrl = canvas.toDataURL('image/png');
+        tempCtx.putImageData(imgData, 0, 0);
+
+        // 2. Create main canvas for final image with premium stylized green background
+        const mainCanvas = document.createElement('canvas');
+        const mainCtx = mainCanvas.getContext('2d');
+        mainCanvas.width = w;
+        mainCanvas.height = h;
+
+        // Draw a premium radial gradient representing stadium spotlights
+        const gradient = mainCtx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.1, w / 2, h / 2, Math.max(w, h) * 0.8);
+        gradient.addColorStop(0, '#0a4d25'); // Spotlight center: Vibrant emerald green
+        gradient.addColorStop(0.5, '#042813'); // Mid range: Deep forest green
+        gradient.addColorStop(1, '#021208'); // Outer edge: Ultra-dark black-green
+        mainCtx.fillStyle = gradient;
+        mainCtx.fillRect(0, 0, w, h);
+
+        // Draw the transparent cutout jersey on top of our premium green background
+        mainCtx.drawImage(tempCanvas, 0, 0);
+
+        const processedDataUrl = mainCanvas.toDataURL('image/jpeg', 0.92);
         chromaKeyCache.set(absoluteSrc, processedDataUrl);
         setProcessedSrc(processedDataUrl);
       } catch (err) {

@@ -110,6 +110,9 @@ DATABASES = {
         'PASSWORD': DB_PASSWORD,
         'HOST': DB_HOST,
         'PORT': str(DB_PORT),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 

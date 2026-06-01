@@ -81,36 +81,37 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 import os
+import urllib.parse as urlparse
 
 IS_RENDER = 'RENDER' in os.environ
-# Dynamic DB Configuration: Selects Render PostgreSQL in production by default,
-# and SQLite locally to keep development extremely fast.
-USE_POSTGRES = os.environ.get('USE_POSTGRES', 'True' if IS_RENDER else 'False') == 'True'
 
-if USE_POSTGRES:
-    DB_HOST = os.environ.get('DB_HOST', 'dpg-d8buj4rbc2fs738m2po0-a' if IS_RENDER else 'dpg-d8buj4rbc2fs738m2po0-a.singapore-postgres.render.com')
-    DB_NAME = os.environ.get('DB_NAME', 'db_7_10_house')
-    DB_USER = os.environ.get('DB_USER', 'db_7_10_house_user')
-    DB_PASSWORD = os.environ.get('DB_PASSWORD', 'crDPVBPzPn2k83h24FbnWcOwAHREpbyp')
-    DB_PORT = os.environ.get('DB_PORT', '5432')
+# Always connect to the specified PostgreSQL database link
+DB_URL_STR = os.environ.get(
+    'DATABASE_URL', 
+    'postgresql://db_7_10_house_user:crDPVBPzPn2k83h24FbnWcOwAHREpbyp@dpg-d8buj4rbc2fs738m2po0-a/db_7_10_house'
+)
 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': DB_NAME,
-            'USER': DB_USER,
-            'PASSWORD': DB_PASSWORD,
-            'HOST': DB_HOST,
-            'PORT': DB_PORT,
-        }
+url = urlparse.urlparse(DB_URL_STR)
+DB_USER = url.username
+DB_PASSWORD = url.password
+DB_NAME = url.path[1:]
+DB_PORT = url.port or '5432'
+
+# Dynamically switch host between Render internal network and external Singapore node depending on environment
+DB_HOST = url.hostname
+if DB_HOST == 'dpg-d8buj4rbc2fs738m2po0-a' and not IS_RENDER:
+    DB_HOST = 'dpg-d8buj4rbc2fs738m2po0-a.singapore-postgres.render.com'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
+        'HOST': DB_HOST,
+        'PORT': str(DB_PORT),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation

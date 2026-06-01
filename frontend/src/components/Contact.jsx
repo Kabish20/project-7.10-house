@@ -74,18 +74,6 @@ const Contact = () => {
                 </div>
 
 
-
-                <div className="flex gap-4 items-start">
-                  <div className="p-3 bg-white/5 rounded-xl border border-white/5 text-[#bd922b] shrink-0">
-                    <MapPin className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-white font-extrabold text-xs uppercase tracking-tight">Retro Labs HQ</p>
-                    <p className="text-gray-400 text-xs mt-0.5">Suite 400, 85 Broad Street</p>
-                    <p className="text-gray-400 text-xs">New York, NY 10004, USA</p>
-                  </div>
-                </div>
-
               </div>
 
             </div>

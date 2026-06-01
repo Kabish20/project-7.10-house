@@ -3,7 +3,14 @@ import { getBackendBaseUrl } from '../utils/config';
 
 const isUploadedImage = (url) => {
   if (!url) return false;
-  return url.includes('/media/') || url.startsWith('data:') || url.startsWith('blob:') || url.includes(':8000') || url.includes('onrender.com');
+  return (
+    url.includes('/media/') || 
+    url.startsWith('data:') || 
+    url.startsWith('blob:') || 
+    url.includes(':8000') || 
+    url.includes('onrender.com') ||
+    url.startsWith('http')
+  );
 };
 
 // Global memory cache to prevent redundant heavy pixel-loop chroma key processing
@@ -74,23 +81,121 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
         const imgData = ctx.getImageData(0, 0, w, h);
         const data = imgData.data;
 
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
+        // BFS background removal & edge feathering
+        const visited = new Uint8Array(w * h);
+        const queue = [];
 
-          // Target saturated grass green while protecting jersey colors
+        // Sample corner and border colors to dynamically detect the background color
+        const cornerCoords = [
+          [0, 0], [w - 1, 0], [0, h - 1], [w - 1, h - 1],
+          [Math.floor(w / 2), 0], [Math.floor(w / 2), h - 1],
+          [0, Math.floor(h / 2)], [w - 1, Math.floor(h / 2)]
+        ];
+        const corners = [];
+        for (const [cx, cy] of cornerCoords) {
+          if (cx >= 0 && cx < w && cy >= 0 && cy < h) {
+            const idx = (cy * w + cx) * 4;
+            if (data[idx + 3] > 50) { // Only sample non-transparent pixels
+              corners.push([data[idx], data[idx + 1], data[idx + 2]]);
+            }
+          }
+        }
+
+        // Helper to evaluate if a border-connected pixel matches a background pattern
+        const getBackgroundMatch = (r, g, b) => {
+          // 1. Match against sampled corners/borders (Euclidean distance in RGB space)
+          let bestCornerDist = Infinity;
+          for (const [cr, cg, cb] of corners) {
+            const dist = Math.sqrt((r - cr) ** 2 + (g - cg) ** 2 + (b - cb) ** 2);
+            if (dist < bestCornerDist) {
+              bestCornerDist = dist;
+            }
+          }
+
+          if (bestCornerDist < 30) {
+            return { match: true, strength: 1.0 };
+          } else if (bestCornerDist < 55) {
+            // Feathering boundary
+            const strength = 1.0 - (bestCornerDist - 30) / 25;
+            return { match: true, strength };
+          }
+
+          // 2. Generic high-luminance white/light background detection
+          if (r > 225 && g > 225 && b > 225) {
+            return { match: true, strength: 1.0 };
+          } else if (r > 195 && g > 195 && b > 195) {
+            const mean = (r + g + b) / 3;
+            const dev = Math.sqrt(((r - mean)**2 + (g - mean)**2 + (b - mean)**2) / 3);
+            if (dev < 15) { // Close to neutral gray/white
+              const strength = 1.0 - (225 - mean) / 30;
+              return { match: true, strength: Math.max(0.2, strength) };
+            }
+          }
+
+          // 3. Saturated field green grass keyer
           const maxRB = Math.max(r, b);
           const diff = g - maxRB;
-          
           if (g > 35 && diff > 5 && g > r * 1.10 && g > b * 1.10) {
-            // Saturated grass region -> make transparent with edge feathering
             if (diff > 12 && g > r * 1.20) {
-              data[i + 3] = 0; // solid background -> transparent
+              return { match: true, strength: 1.0 };
             } else {
-              // Edge pixels -> feather transparency to create soft margins
-              const factor = (diff - 5) / 7;
-              data[i + 3] = Math.max(0, Math.floor(data[i + 3] * (1 - Math.min(1, factor))));
+              const strength = (diff - 5) / 7;
+              return { match: true, strength: Math.min(1.0, strength) };
+            }
+          }
+
+          return { match: false, strength: 0.0 };
+        };
+
+        // Queue all border pixels for BFS flood-fill
+        for (let x = 0; x < w; x++) {
+          queue.push([x, 0]);
+          queue.push([x, h - 1]);
+          visited[0 * w + x] = 1;
+          visited[(h - 1) * w + x] = 1;
+        }
+        for (let y = 1; y < h - 1; y++) {
+          queue.push([0, y]);
+          queue.push([w - 1, y]);
+          visited[y * w + 0] = 1;
+          visited[y * w + (w - 1)] = 1;
+        }
+
+        let head = 0;
+        while (head < queue.length) {
+          const [cx, cy] = queue[head++];
+          const idx = (cy * w + cx) * 4;
+
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const a = data[idx + 3];
+
+          if (a === 0) continue;
+
+          const { match, strength } = getBackgroundMatch(r, g, b);
+
+          if (match) {
+            data[idx + 3] = Math.max(0, Math.floor(a * (1 - strength)));
+
+            // Expand flood fill to 4-way neighbors only for strong background matches
+            if (strength > 0.6) {
+              const neighbors = [
+                [cx + 1, cy],
+                [cx - 1, cy],
+                [cx, cy + 1],
+                [cx, cy - 1]
+              ];
+
+              for (const [nx, ny] of neighbors) {
+                if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                  const nIdx = ny * w + nx;
+                  if (!visited[nIdx]) {
+                    visited[nIdx] = 1;
+                    queue.push([nx, ny]);
+                  }
+                }
+              }
             }
           }
         }

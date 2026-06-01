@@ -188,7 +188,7 @@ const ProductDetail = () => {
     ].join('\n');
 
     const encodedText = encodeURIComponent(messageText);
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=919003878494&text=${encodedText}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=918072579303&text=${encodedText}`;
     window.open(whatsappUrl, '_blank');
   };
 

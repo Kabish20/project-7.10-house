@@ -84,13 +84,19 @@ const TransparentProductImage = ({ src, alt, className, style, ...props }) => {
           const diff = g - maxRB;
           
           if (g > 35 && diff > 5 && g > r * 1.10 && g > b * 1.10) {
-            // Saturated grass region -> make transparent with edge feathering
+            // Saturated grass region -> convert to solid white background
             if (diff > 12 && g > r * 1.20) {
-              data[i + 3] = 0; // solid background -> transparent
+              data[i] = 255;
+              data[i + 1] = 255;
+              data[i + 2] = 255;
+              data[i + 3] = 255;
             } else {
-              // Edge pixels -> feather transparency to create soft margins
-              const factor = (diff - 5) / 7;
-              data[i + 3] = Math.max(0, Math.floor(data[i + 3] * (1 - Math.min(1, factor))));
+              // Edge pixels -> blend smoothly to white to create soft margins
+              const factor = Math.min(1, Math.max(0, (diff - 5) / 7));
+              data[i] = Math.round(r + (255 - r) * factor);
+              data[i + 1] = Math.round(g + (255 - g) * factor);
+              data[i + 2] = Math.round(b + (255 - b) * factor);
+              data[i + 3] = 255;
             }
           }
         }

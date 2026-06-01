@@ -70,19 +70,25 @@ const Store = () => {
     setEnquirySize('M');
     setEnquiryQty(1);
   };
-
   const sendWhatsAppEnquiry = () => {
     if (!enquiryProduct) return;
     const details = getProductDetails(enquiryProduct);
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
 
-    const imageLink = formatImageLink(enquiryProduct.image_url);
+    // Build image links — support multiple image views (e.g. Front and Back)
+    const imageUrls = enquiryProduct.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
+    const imageLinksText = imageUrls.map((url, idx) => {
+      const formatted = formatImageLink(url);
+      const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
+      return `  • *${label}:* ${formatted}`;
+    }).join('\n');
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,
       ``,
       `📌 *Product:* ${enquiryProduct.name}`,
-      `🖼️ *Image:* ${imageLink}`,
+      `🖼️ *Images:*`,
+      imageLinksText,
       ``,
       `📋 *Product Details:*`,
       detailLines,

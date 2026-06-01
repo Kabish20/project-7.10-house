@@ -163,14 +163,20 @@ const ProductDetail = () => {
     const details = getProductDetails(activeHeroProduct);
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
 
-    // Build image link — use absolute URL if it's a relative path
-    const imageLink = formatImageLink(activeHeroProduct.image_url);
+    // Build image links — support multiple image views (e.g. Front and Back)
+    const imageUrls = activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
+    const imageLinksText = imageUrls.map((url, idx) => {
+      const formatted = formatImageLink(url);
+      const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
+      return `  • *${label}:* ${formatted}`;
+    }).join('\n');
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,
       ``,
       `📌 *Product:* ${activeHeroProduct.name}`,
-      `🖼️ *Image:* ${imageLink}`,
+      `🖼️ *Images:*`,
+      imageLinksText,
       ``,
       `📋 *Product Details:*`,
       detailLines,

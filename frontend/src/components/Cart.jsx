@@ -43,9 +43,14 @@ const Cart = () => {
         ? `\n    └─ Customization: *${item.customDetails?.name} #${item.customDetails?.number}*` 
         : '';
       
-      const imageLink = formatImageLink(item.product.image_url);
+      const imageUrls = item.product.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
+      const imageLinksText = imageUrls.map((url, i) => {
+        const formatted = formatImageLink(url);
+        const label = i === 0 ? 'Front' : i === 1 ? 'Back' : `View ${i + 1}`;
+        return `*${label}:* ${formatted}`;
+      }).join(', ');
 
-      return `${idx + 1}. *${item.product.name}*\n    ├─ Size: *${item.size}*\n    ├─ Qty: *${item.quantity}*\n    ├─ Price: *${formatPrice(item.product.price * item.quantity)}* (${formatPrice(item.product.price)} each)${customText}\n    └─ Image: ${imageLink}`;
+      return `${idx + 1}. *${item.product.name}*\n    ├─ Size: *${item.size}*\n    ├─ Qty: *${item.quantity}*\n    ├─ Price: *${formatPrice(item.product.price * item.quantity)}* (${formatPrice(item.product.price)} each)${customText}\n    └─ Images: ${imageLinksText}`;
     }).join('\n\n');
 
     const totalAmount = formatPrice(getCartTotal());

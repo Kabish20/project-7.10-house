@@ -293,7 +293,7 @@ const Hero = () => {
               onClick={() => setActiveView('store')}
               className="px-6 py-3.5 bg-white/5 border border-white/10 hover:border-white/30 text-white font-bold text-sm uppercase rounded-xl tracking-wider transition-all duration-300"
             >
-              All the Collection
+              All Collection
             </button>
           </div>
         </div>

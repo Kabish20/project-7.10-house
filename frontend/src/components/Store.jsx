@@ -162,7 +162,7 @@ const Store = () => {
                   : 'bg-white/5 text-gray-400 hover:text-white border border-white/5'
                 }`}
             >
-              All Collection
+              All collection
             </button>
             {categories.map((cat) => (
               <button

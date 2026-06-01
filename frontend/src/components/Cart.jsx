@@ -53,7 +53,7 @@ const Cart = () => {
     ].join('\n');
 
     const encodedText = encodeURIComponent(messageText);
-    const whatsappUrl = `https://wa.me/919003878494?text=${encodedText}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=919003878494&text=${encodedText}`;
 
     // Establish secure connection and then redirect to WhatsApp
     setTimeout(() => {

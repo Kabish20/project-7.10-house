@@ -82,7 +82,7 @@ const Store = () => {
     ].join('\n');
 
     const encodedText = encodeURIComponent(messageText);
-    window.open(`https://wa.me/919003878494?text=${encodedText}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=919003878494&text=${encodedText}`, '_blank');
     setEnquiryProduct(null);
   };
 

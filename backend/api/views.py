@@ -57,8 +57,8 @@ class AdminLoginView(APIView):
 class ImageUploadView(APIView):
     """
     Accepts a JSON body: { "images": ["data:image/png;base64,...", ...] }
-    Returns the base64 data URLs directly for 100% persistent database storage.
-    Attempts to save to local media as a local backup where possible.
+    Saves images to local media directory and returns the resolved media URLs.
+    If the filesystem is read-only, falls back to returning the original base64 strings.
     """
     parser_classes = [JSONParser]
 
@@ -67,7 +67,7 @@ class ImageUploadView(APIView):
         if not images_b64:
             return Response({'error': 'No images provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Attempt to save a local backup copy on the local filesystem if writable
+        urls = []
         try:
             jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
             os.makedirs(jerseys_dir, exist_ok=True)
@@ -85,10 +85,10 @@ class ImageUploadView(APIView):
                 filepath = os.path.join(jerseys_dir, filename)
                 with open(filepath, 'wb') as f:
                     f.write(img_bytes)
+                urls.append(f"/media/jerseys/{filename}")
         except Exception:
-            # Silently fallback to base64 if filesystem is read-only (like in Render runtime containers)
-            pass
+            # Fallback to base64 if filesystem is read-only
+            urls = images_b64
 
-        # Return the original base64 strings so they are saved directly in the PostgreSQL DB
-        return Response({'urls': images_b64}, status=status.HTTP_201_CREATED)
+        return Response({'urls': urls}, status=status.HTTP_201_CREATED)
 

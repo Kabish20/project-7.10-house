@@ -10,13 +10,21 @@ const formatImageLink = (url) => {
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
     return '[Custom Uploaded Jersey]';
   }
+  
+  let absoluteUrl = '';
   if (raw.startsWith('http')) {
-    return raw;
+    absoluteUrl = raw;
+  } else if (raw.startsWith('/media/')) {
+    absoluteUrl = `${getBackendBaseUrl()}${raw}`;
+  } else {
+    absoluteUrl = `${window.location.origin}${raw}`;
   }
-  if (raw.startsWith('/media/')) {
-    return `${getBackendBaseUrl()}${raw}`;
-  }
-  return `${window.location.origin}${raw}`;
+
+  // Force local hosts to resolve to production domain so WhatsApp links are publicly viewable
+  return absoluteUrl
+    .replace('http://127.0.0.1:8000', 'https://seven-10-house.onrender.com')
+    .replace('http://localhost:8000', 'https://seven-10-house.onrender.com')
+    .replace('http://localhost:5173', 'https://seven-10-house.onrender.com');
 };
 
 const Cart = () => {

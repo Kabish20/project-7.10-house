@@ -87,7 +87,7 @@ const Store = () => {
       `📋 *Product Details:*`,
       detailLines,
       ``,
-      `💰 *Price:* ${formatPrice(enquiryProduct.price)}`,
+      `💰 *Price:* ${formatPrice(enquiryProduct.price * enquiryQty)}${enquiryQty > 1 ? ` (${formatPrice(enquiryProduct.price)} each)` : ''}`,
       `📐 *Fitting Size:* ${enquirySize}`,
       `🔢 *Quantity:* ${enquiryQty}`,
       ``,

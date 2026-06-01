@@ -180,7 +180,7 @@ const ProductDetail = () => {
       `📋 *Product Details:*`,
       detailLines,
       ``,
-      `💰 *Price:* ${formatPrice(activeHeroProduct.price)}`,
+      `💰 *Price:* ${formatPrice(activeHeroProduct.price * quantity)}${quantity > 1 ? ` (${formatPrice(activeHeroProduct.price)} each)` : ''}`,
       `📐 *Fitting Size:* ${selectedSize}`,
       `🔢 *Quantity:* ${quantity}`,
       ``,

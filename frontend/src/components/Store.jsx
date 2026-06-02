@@ -8,7 +8,7 @@ const formatImageLink = (url) => {
   if (!url) return '';
   const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return '[Custom Jersey - Automatically Downloaded to your device. Please attach it here!]';
+    return '[Custom Jersey - Downloaded to device & Copied to clipboard. Press Ctrl+V / Paste in chat to attach!]';
   }
   
   let absoluteUrl = '';
@@ -80,7 +80,7 @@ const Store = () => {
     setEnquiryQty(1);
     setEnquiryIncludeImage(true);
   };
-  const sendWhatsAppEnquiry = () => {
+  const sendWhatsAppEnquiry = async () => {
     if (!enquiryProduct) return;
     const details = getProductDetails(enquiryProduct);
     const detailLines = details.map((d) => `  • ${d}`).join('\n');
@@ -93,10 +93,10 @@ const Store = () => {
       return `  • *${label}:* ${formatted}`;
     }).join('\n') : '';
 
-    // Automatically trigger download of custom images if they are base64/blob
+    // Automatically trigger download of custom images if they are base64/blob, and copy Front to clipboard
     if (enquiryIncludeImage) {
-      imageUrls.forEach((url, idx) => {
-        const raw = url.trim();
+      for (let idx = 0; idx < imageUrls.length; idx++) {
+        const raw = imageUrls[idx].trim();
         if (raw.startsWith('data:') || raw.startsWith('blob:')) {
           const label = idx === 0 ? 'Front' : idx === 1 ? 'Back' : `View_${idx + 1}`;
           const cleanName = enquiryProduct.name.replace(/[^a-zA-Z0-9]/g, '_');
@@ -107,8 +107,37 @@ const Store = () => {
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+
+          // Copy image to clipboard so they can paste it directly in WhatsApp
+          if (idx === 0) {
+            try {
+              const response = await fetch(raw);
+              const blob = await response.blob();
+              let pngBlob = blob;
+              if (blob.type !== 'image/png') {
+                const img = new Image();
+                img.src = raw;
+                await new Promise((resolve) => {
+                  img.onload = resolve;
+                  img.onerror = resolve;
+                });
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+              }
+              if (pngBlob) {
+                const item = new ClipboardItem({ [pngBlob.type]: pngBlob });
+                await navigator.clipboard.write([item]);
+              }
+            } catch (err) {
+              console.warn('Clipboard write failed:', err);
+            }
+          }
         }
-      });
+      }
     }
 
     const messageText = [

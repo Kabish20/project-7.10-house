@@ -66,6 +66,7 @@ const Store = () => {
   const [enquiryProduct, setEnquiryProduct] = useState(null);
   const [enquirySize, setEnquirySize] = useState('M');
   const [enquiryQty, setEnquiryQty] = useState(1);
+  const [enquiryIncludeImage, setEnquiryIncludeImage] = useState(true);
 
   const handleProductClick = (product) => {
     setActiveHeroProduct(product);
@@ -77,6 +78,7 @@ const Store = () => {
     setEnquiryProduct(product);
     setEnquirySize('M');
     setEnquiryQty(1);
+    setEnquiryIncludeImage(true);
   };
   const sendWhatsAppEnquiry = () => {
     if (!enquiryProduct) return;
@@ -85,19 +87,21 @@ const Store = () => {
 
     // Build image links — support multiple image views (e.g. Front and Back)
     const imageUrls = enquiryProduct.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
-    const imageLinksText = imageUrls.map((url, idx) => {
+    const imageLinksText = enquiryIncludeImage ? imageUrls.map((url, idx) => {
       const formatted = formatImageLink(url);
       const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
       return `  • *${label}:* ${formatted}`;
-    }).join('\n');
+    }).join('\n') : '';
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,
       ``,
       `📌 *Product:* ${enquiryProduct.name}`,
-      `🖼️ *Images:*`,
-      imageLinksText,
-      ``,
+      ...(enquiryIncludeImage && imageLinksText ? [
+        `🖼️ *Images:*`,
+        imageLinksText,
+        ``
+      ] : []),
       `📋 *Product Details:*`,
       detailLines,
       ``,
@@ -399,6 +403,20 @@ const Store = () => {
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
+              </div>
+
+              {/* Toggle Option to include image in WhatsApp */}
+              <div className="flex items-center gap-2 py-1 select-none">
+                <input
+                  type="checkbox"
+                  id="enquiryIncludeImage"
+                  checked={enquiryIncludeImage}
+                  onChange={(e) => setEnquiryIncludeImage(e.target.checked)}
+                  className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-[#25D366] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#25D366]"
+                />
+                <label htmlFor="enquiryIncludeImage" className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider cursor-pointer">
+                  Include product image
+                </label>
               </div>
 
               {/* Send button */}

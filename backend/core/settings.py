@@ -85,36 +85,41 @@ import urllib.parse as urlparse
 
 IS_RENDER = 'RENDER' in os.environ
 
-# Always connect to the specified PostgreSQL database link
-DB_URL_STR = os.environ.get(
-    'DATABASE_URL', 
-    'postgresql://db_7_10_house_user:crDPVBPzPn2k83h24FbnWcOwAHREpbyp@dpg-d8buj4rbc2fs738m2po0-a/db_7_10_house'
-)
+if IS_RENDER:
+    # Always connect to the specified PostgreSQL database link in production
+    DB_URL_STR = os.environ.get(
+        'DATABASE_URL', 
+        'postgresql://db_7_10_house_user:crDPVBPzPn2k83h24FbnWcOwAHREpbyp@dpg-d8buj4rbc2fs738m2po0-a/db_7_10_house'
+    )
 
-url = urlparse.urlparse(DB_URL_STR)
-DB_USER = url.username
-DB_PASSWORD = url.password
-DB_NAME = url.path[1:]
-DB_PORT = url.port or '5432'
+    url = urlparse.urlparse(DB_URL_STR)
+    DB_USER = url.username
+    DB_PASSWORD = url.password
+    DB_NAME = url.path[1:]
+    DB_PORT = url.port or '5432'
+    DB_HOST = url.hostname
 
-# Dynamically switch host between Render internal network and external Singapore node depending on environment
-DB_HOST = url.hostname
-if DB_HOST == 'dpg-d8buj4rbc2fs738m2po0-a' and not IS_RENDER:
-    DB_HOST = 'dpg-d8buj4rbc2fs738m2po0-a.singapore-postgres.render.com'
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': str(DB_PORT),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': DB_NAME,
+            'USER': DB_USER,
+            'PASSWORD': DB_PASSWORD,
+            'HOST': DB_HOST,
+            'PORT': str(DB_PORT),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-}
+else:
+    # Local development uses local SQLite database file to avoid remote PostgreSQL connection failures
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

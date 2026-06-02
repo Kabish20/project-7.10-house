@@ -137,6 +137,7 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [showSizeChart, setShowSizeChart] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [includeImage, setIncludeImage] = useState(true);
 
   if (!activeHeroProduct) {
     return (
@@ -173,19 +174,21 @@ const ProductDetail = () => {
 
     // Build image links — support multiple image views (e.g. Front and Back)
     const imageUrls = activeHeroProduct.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
-    const imageLinksText = imageUrls.map((url, idx) => {
+    const imageLinksText = includeImage ? imageUrls.map((url, idx) => {
       const formatted = formatImageLink(url);
       const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
       return `  • *${label}:* ${formatted}`;
-    }).join('\n');
+    }).join('\n') : '';
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,
       ``,
       `📌 *Product:* ${activeHeroProduct.name}`,
-      `🖼️ *Images:*`,
-      imageLinksText,
-      ``,
+      ...(includeImage && imageLinksText ? [
+        `🖼️ *Images:*`,
+        imageLinksText,
+        ``
+      ] : []),
       `📋 *Product Details:*`,
       detailLines,
       ``,
@@ -392,6 +395,20 @@ const ProductDetail = () => {
                     "Out of Stock"
                   )}
                 </button>
+
+                {/* Toggle Option to include image in WhatsApp */}
+                <div className="flex items-center gap-2 py-1 select-none">
+                  <input
+                    type="checkbox"
+                    id="detailIncludeImage"
+                    checked={includeImage}
+                    onChange={(e) => setIncludeImage(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-[#25D366] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#25D366]"
+                  />
+                  <label htmlFor="detailIncludeImage" className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest cursor-pointer">
+                    Include product image in WhatsApp
+                  </label>
+                </div>
 
                 {/* WhatsApp Enquire button */}
                 <button

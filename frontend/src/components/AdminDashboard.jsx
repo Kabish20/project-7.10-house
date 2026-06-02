@@ -86,6 +86,12 @@ const AdminDashboard = () => {
   // Client-side image compression and downscaling helper
   const compressImageBase64 = (base64Str, fileType = 'image/jpeg', maxDim = 800, quality = 0.7) => {
     return new Promise((resolve) => {
+      // Bypass compression for vector SVGs and animated GIFs to preserve their native features
+      if (fileType === 'image/svg+xml' || fileType === 'image/gif') {
+        resolve(base64Str);
+        return;
+      }
+
       const img = new Image();
       img.src = base64Str;
       img.onload = () => {
@@ -108,7 +114,8 @@ const AdminDashboard = () => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
         
-        const exportType = fileType === 'image/png' ? 'image/png' : 'image/jpeg';
+        // Support and preserve transparent formats (png, webp)
+        const exportType = ['image/png', 'image/webp'].includes(fileType) ? fileType : 'image/jpeg';
         resolve(canvas.toDataURL(exportType, exportType === 'image/jpeg' ? quality : undefined));
       };
       img.onerror = () => {
@@ -799,7 +806,7 @@ const AdminDashboard = () => {
                             <>
                               <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
                               <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Front View</span>
-                              <span className="text-[8px] text-gray-500 uppercase tracking-wider text-center px-2">PNG, JPG, WEBP formats</span>
+                              <span className="text-[8px] text-gray-500 uppercase tracking-wider text-center px-2">PNG, JPG, WEBP, SVG, GIF formats</span>
                             </>
                           )}
                         </div>
@@ -848,7 +855,7 @@ const AdminDashboard = () => {
                             <>
                               <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
                               <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Back View</span>
-                              <span className="text-[8px] text-gray-500 uppercase tracking-wider text-center px-2">PNG, JPG, WEBP formats</span>
+                              <span className="text-[8px] text-gray-500 uppercase tracking-wider text-center px-2">PNG, JPG, WEBP, SVG, GIF formats</span>
                             </>
                           )}
                         </div>
@@ -1082,7 +1089,7 @@ const AdminDashboard = () => {
                           <>
                             <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
                             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Front View</span>
-                            <span className="text-[9px] text-gray-500 uppercase tracking-wider text-center">PNG, JPG, WEBP formats</span>
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider text-center">PNG, JPG, WEBP, SVG, GIF formats</span>
                           </>
                         )}
                       </div>
@@ -1129,7 +1136,7 @@ const AdminDashboard = () => {
                           <>
                             <PlusCircle className="w-5 h-5 text-gray-500 group-hover:text-[#bd922b] transition-colors" />
                             <span className="text-[10px] font-bold text-gray-300 group-hover:text-white transition-colors text-center">Upload Back View</span>
-                            <span className="text-[9px] text-gray-500 uppercase tracking-wider text-center">PNG, JPG, WEBP formats</span>
+                            <span className="text-[9px] text-gray-500 uppercase tracking-wider text-center">PNG, JPG, WEBP, SVG, GIF formats</span>
                           </>
                         )}
                       </div>

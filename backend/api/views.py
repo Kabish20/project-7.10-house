@@ -107,8 +107,10 @@ class ImageUploadView(APIView):
             try:
                 if ';base64,' in data_url:
                     header, encoded = data_url.split(';base64,', 1)
-                    ext = header.split('/')[-1]
-                    if ext not in ('png', 'jpg', 'jpeg', 'webp', 'gif'):
+                    raw_ext = header.split('/')[-1]
+                    raw_ext = raw_ext.split('+')[0] if '+' in raw_ext else raw_ext
+                    ext = ''.join(c for c in raw_ext if c.isalnum()).lower()
+                    if not ext:
                         ext = 'png'
                 else:
                     encoded = data_url

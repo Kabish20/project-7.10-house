@@ -4,6 +4,7 @@ import TransparentProductImage from './TransparentProductImage';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import ronaldoImg from '../card Image/CRISTIANO RONALDO.jpeg';
 import messiImg from '../card Image/D10s.jpeg';
+import neymarImg from '../card Image/Neymar.jpeg';
 import retroImg from '../card Image/ChatGPT Image May 26, 2026, 12_48_57 PM.png';
 import barcelonaLogo from '../club logo/barcelona.jpeg';
 import realMadridLogo from '../club logo/real_madrid.jpeg';
@@ -350,7 +351,7 @@ const Hero = () => {
       <section className="relative z-20 max-w-7xl mx-auto w-full px-6 md:px-12 py-10">
         
         {/* GOATs Title & Quotes Block */}
-        <div className="text-center mb-10 space-y-4 max-w-4xl mx-auto">
+        <div className="text-center mb-10 space-y-4 max-w-7xl mx-auto">
           <span className="text-[9px] font-black tracking-widest text-[#bd922b] uppercase block mb-1.5 animate-pulse">
             THE SUPREME FOOTBALL SPECTRUM
           </span>
@@ -358,14 +359,22 @@ const Hero = () => {
             THE <span className="text-[#bd922b]">GOATs</span> COLLECTION
           </h3>
           
-          {/* Dual Quote Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 text-left">
+          {/* Tri-Quote Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 text-left">
             <div className="glass-panel p-5 rounded-2xl border-l-2 border-[#e30a17]/40 bg-[#06070a]/40 backdrop-blur-sm relative">
               <span className="text-[36px] font-serif text-[#e30a17]/10 absolute top-0 left-2 pointer-events-none">“</span>
               <p className="text-gray-400 text-xs italic leading-relaxed pl-4 font-semibold">
                 "Your love makes me strong, your hate makes me unstoppable."
               </p>
               <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black text-right mt-1.5 pr-2">— CRISTIANO RONALDO</p>
+            </div>
+            
+            <div className="glass-panel p-5 rounded-2xl border-l-2 border-[#FFE000]/40 bg-[#06070a]/40 backdrop-blur-sm relative">
+              <span className="text-[36px] font-serif text-[#FFE000]/10 absolute top-0 left-2 pointer-events-none">“</span>
+              <p className="text-gray-400 text-xs italic leading-relaxed pl-4 font-semibold">
+                "There is no pressure when you're making a dream come true."
+              </p>
+              <p className="text-[9px] text-gray-500 uppercase tracking-widest font-black text-right mt-1.5 pr-2">— NEYMAR JR</p>
             </div>
             
             <div className="glass-panel p-5 rounded-2xl border-l-2 border-[#75aadb]/40 bg-[#06070a]/40 backdrop-blur-sm relative">
@@ -378,7 +387,7 @@ const Hero = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Left Player Card: Cristiano Ronaldo */}
           <div 
             onClick={() => handleTeamClick('PORTUGAL')}
@@ -397,8 +406,31 @@ const Hero = () => {
               <span className="px-3 py-1 bg-[#e30a17]/20 border border-[#e30a17]/30 text-[#e30a17] text-[10px] sm:text-[11px] font-black tracking-widest rounded-md uppercase">
                 PORTUGAL · NO. 7
               </span>
-              <h3 className="text-white font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight leading-none pt-1">CRISTIANO RONALDO</h3>
-              <p className="text-gray-400 text-xs sm:text-[13px] uppercase font-bold tracking-wide">Explore Authentic Retro & National Kits</p>
+              <h3 className="text-white font-black text-xl sm:text-2xl md:text-3xl uppercase tracking-tight leading-none pt-1">CRISTIANO RONALDO</h3>
+              <p className="text-gray-400 text-[10px] sm:text-xs uppercase font-bold tracking-wide">Explore Authentic Retro & National Kits</p>
+            </div>
+          </div>
+
+          {/* Center Player Card: Neymar Jr */}
+          <div 
+            onClick={() => handleTeamClick('BRAZIL')}
+            className="group relative h-[340px] sm:h-[380px] md:h-[420px] rounded-3xl overflow-hidden border border-white/5 hover:border-[#FFE000]/30 cursor-pointer transition-all duration-500 hover:scale-[1.02] shadow-2xl hover:shadow-[#FFE000]/10"
+          >
+            {/* Yellow/Green Overlay representing Brazil */}
+            <div className="absolute inset-0 bg-linear-to-t from-[#06070a] via-[#06070a]/45 to-transparent z-10" />
+            <div className="absolute inset-0 bg-emerald-950/10 group-hover:bg-[#009739]/5 transition-colors duration-500 z-10" />
+            <img 
+              src={neymarImg} 
+              alt="Neymar Jr" 
+              className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700"
+            />
+            {/* Text Overlay */}
+            <div className="absolute bottom-8 left-8 right-8 z-20 space-y-2">
+              <span className="px-3 py-1 bg-[#FFE000]/25 border border-[#FFE000]/30 text-[#FFE000] text-[10px] sm:text-[11px] font-black tracking-widest rounded-md uppercase">
+                BRAZIL · NO. 10
+              </span>
+              <h3 className="text-white font-black text-xl sm:text-2xl md:text-3xl uppercase tracking-tight leading-none pt-1">NEYMAR JR</h3>
+              <p className="text-gray-400 text-[10px] sm:text-xs uppercase font-bold tracking-wide">Explore Authentic Brazil & National Kits</p>
             </div>
           </div>
 
@@ -420,8 +452,8 @@ const Hero = () => {
               <span className="px-3 py-1 bg-[#75aadb]/20 border border-[#75aadb]/30 text-[#75aadb] text-[10px] sm:text-[11px] font-black tracking-widest rounded-md uppercase">
                 ARGENTINA · NO. 10
               </span>
-              <h3 className="text-white font-black text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight leading-none pt-1">LIONEL MESSI</h3>
-              <p className="text-gray-400 text-xs sm:text-[13px] uppercase font-bold tracking-wide">Explore Authentic Stars & Vintage Kits</p>
+              <h3 className="text-white font-black text-xl sm:text-2xl md:text-3xl uppercase tracking-tight leading-none pt-1">LIONEL MESSI</h3>
+              <p className="text-gray-400 text-[10px] sm:text-xs uppercase font-bold tracking-wide">Explore Authentic Stars & Vintage Kits</p>
             </div>
           </div>
         </div>

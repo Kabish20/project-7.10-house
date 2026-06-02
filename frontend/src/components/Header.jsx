@@ -62,7 +62,7 @@ const Header = () => {
               setActiveView('admin');
               setIsMobileMenuOpen(false);
             }}
-            className={`p-2 relative group transition-colors cursor-pointer ${activeView === 'admin' ? 'text-[#bd922b]' : 'text-gray-400 hover:text-white'}`}
+            className={`hidden md:block p-2 relative group transition-colors cursor-pointer ${activeView === 'admin' ? 'text-[#bd922b]' : 'text-gray-400 hover:text-white'}`}
             title="Admin Dashboard Portal"
           >
             <ShieldAlert className="w-5 h-5 group-hover:scale-105 transition-all" />
@@ -112,7 +112,7 @@ const Header = () => {
       {/* Mobile Sliding Navigation Menu (Premium overlay) */}
       <div 
         className={`fixed inset-x-0 top-[96px] md:hidden bg-[#06070a]/95 backdrop-blur-xl border-b border-white/5 transition-all duration-300 ease-in-out z-30 overflow-hidden ${
-          isMobileMenuOpen ? 'max-h-[300px] opacity-100 py-6' : 'max-h-0 opacity-0 py-0 pointer-events-none'
+          isMobileMenuOpen ? 'max-h-[350px] opacity-100 py-6' : 'max-h-0 opacity-0 py-0 pointer-events-none'
         }`}
       >
         <nav className="flex flex-col items-center gap-5 px-6">
@@ -138,8 +138,32 @@ const Header = () => {
               </button>
             );
           })}
+          
+          {/* Staff Portal Link (Mobile only) */}
+          <button
+            onClick={() => {
+              setActiveView('admin');
+              setIsMobileMenuOpen(false);
+            }}
+            className={`w-full py-2.5 text-center text-xs font-bold tracking-widest uppercase transition-all rounded-xl relative overflow-hidden cursor-pointer flex items-center justify-center gap-2 ${
+              activeView === 'admin' 
+                ? 'text-[#bd922b] bg-white/5 border border-white/10 shadow-lg' 
+                : 'text-gray-400 hover:text-white/80'
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5" />
+            Staff Portal
+          </button>
         </nav>
       </div>
+
+      {/* Mobile Menu Backdrop Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 top-[96px] bg-black/60 backdrop-blur-sm z-20 md:hidden animate-fadeIn"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
     </header>
   );
 };

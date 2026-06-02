@@ -8,7 +8,7 @@ const formatImageLink = (url) => {
   if (!url) return '';
   const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return '[Custom Uploaded Jersey]';
+    return '[Custom Jersey - Automatically Downloaded to your device. Please attach it here!]';
   }
   
   let absoluteUrl = '';
@@ -179,6 +179,24 @@ const ProductDetail = () => {
       const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
       return `  • *${label}:* ${formatted}`;
     }).join('\n') : '';
+
+    // Automatically trigger download of custom images if they are base64/blob
+    if (includeImage) {
+      imageUrls.forEach((url, idx) => {
+        const raw = url.trim();
+        if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+          const label = idx === 0 ? 'Front' : idx === 1 ? 'Back' : `View_${idx + 1}`;
+          const cleanName = activeHeroProduct.name.replace(/[^a-zA-Z0-9]/g, '_');
+          
+          const link = document.createElement('a');
+          link.href = raw;
+          link.download = `${cleanName}_${label}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      });
+    }
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,
@@ -397,15 +415,16 @@ const ProductDetail = () => {
                 </button>
 
                 {/* Toggle Option to include image in WhatsApp */}
-                <div className="flex items-center gap-2 py-1 select-none">
+                <div className="flex items-center gap-2 py-1 select-none opacity-80">
                   <input
                     type="checkbox"
                     id="detailIncludeImage"
-                    checked={includeImage}
-                    onChange={(e) => setIncludeImage(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-[#25D366] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#25D366]"
+                    checked={true}
+                    disabled
+                    readOnly
+                    className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-[#25D366] focus:ring-0 focus:ring-offset-0 cursor-not-allowed accent-[#25D366]"
                   />
-                  <label htmlFor="detailIncludeImage" className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest cursor-pointer">
+                  <label htmlFor="detailIncludeImage" className="text-[9px] font-extrabold text-gray-400 uppercase tracking-widest cursor-not-allowed">
                     Include product image in WhatsApp
                   </label>
                 </div>

@@ -8,7 +8,7 @@ const formatImageLink = (url) => {
   if (!url) return '';
   const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return '[Custom Uploaded Jersey]';
+    return '[Custom Jersey - Automatically Downloaded to your device. Please attach it here!]';
   }
   
   let absoluteUrl = '';
@@ -44,6 +44,25 @@ const Cart = () => {
   const handleCheckout = () => {
     if (cart.length === 0) return;
     setCheckoutStatus('processing');
+
+    // Automatically trigger download of custom images in cart if they are base64/blob
+    cart.forEach((item) => {
+      const imageUrls = item.product.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
+      imageUrls.forEach((url, idx) => {
+        const raw = url.trim();
+        if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+          const label = idx === 0 ? 'Front' : idx === 1 ? 'Back' : `View_${idx + 1}`;
+          const cleanName = item.product.name.replace(/[^a-zA-Z0-9]/g, '_');
+          
+          const link = document.createElement('a');
+          link.href = raw;
+          link.download = `${cleanName}_${label}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      });
+    });
     
     // Construct WhatsApp order details message
     const orderItemsText = cart.map((item, idx) => {

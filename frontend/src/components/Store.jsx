@@ -8,7 +8,7 @@ const formatImageLink = (url) => {
   if (!url) return '';
   const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return '[Custom Uploaded Jersey]';
+    return '[Custom Jersey - Automatically Downloaded to your device. Please attach it here!]';
   }
   
   let absoluteUrl = '';
@@ -92,6 +92,24 @@ const Store = () => {
       const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
       return `  • *${label}:* ${formatted}`;
     }).join('\n') : '';
+
+    // Automatically trigger download of custom images if they are base64/blob
+    if (enquiryIncludeImage) {
+      imageUrls.forEach((url, idx) => {
+        const raw = url.trim();
+        if (raw.startsWith('data:') || raw.startsWith('blob:')) {
+          const label = idx === 0 ? 'Front' : idx === 1 ? 'Back' : `View_${idx + 1}`;
+          const cleanName = enquiryProduct.name.replace(/[^a-zA-Z0-9]/g, '_');
+          
+          const link = document.createElement('a');
+          link.href = raw;
+          link.download = `${cleanName}_${label}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      });
+    }
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,
@@ -254,7 +272,7 @@ const Store = () => {
 
                 {/* Jersey Presentation Area */}
                 <div 
-                  onClick={() => handleProductClick(product)}
+                  onClick={() => openEnquiryModal(product)}
                   className="aspect-square bg-linear-to-b from-white/3 to-transparent flex items-center justify-center p-3 relative overflow-hidden cursor-pointer"
                 >
                   <div className="absolute w-[60%] aspect-square rounded-full bg-linear-to-br from-[#bd922b]/5 to-transparent blur-2xl group-hover:bg-[#bd922b]/10 transition-colors duration-500" />
@@ -274,7 +292,7 @@ const Store = () => {
                 <div className="p-3.5 grow flex flex-col justify-between">
                   <div>
                     <h3 
-                      onClick={() => handleProductClick(product)}
+                      onClick={() => openEnquiryModal(product)}
                       className="text-white font-extrabold text-[11px] sm:text-xs uppercase tracking-tight leading-snug line-clamp-1 group-hover:text-neon-gold transition-colors cursor-pointer"
                     >
                       {product.name}
@@ -333,7 +351,7 @@ const Store = () => {
           onClick={() => setEnquiryProduct(null)}
         >
           <div
-            className="glass-panel w-full max-w-sm rounded-2xl border border-white/10 overflow-hidden shadow-2xl"
+            className="glass-panel w-full max-w-sm rounded-2xl border border-white/10 overflow-hidden shadow-2xl animate-modal-pop"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Product preview header */}
@@ -406,15 +424,16 @@ const Store = () => {
               </div>
 
               {/* Toggle Option to include image in WhatsApp */}
-              <div className="flex items-center gap-2 py-1 select-none">
+              <div className="flex items-center gap-2 py-1 select-none opacity-80">
                 <input
                   type="checkbox"
                   id="enquiryIncludeImage"
-                  checked={enquiryIncludeImage}
-                  onChange={(e) => setEnquiryIncludeImage(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-[#25D366] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#25D366]"
+                  checked={true}
+                  disabled
+                  readOnly
+                  className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-[#25D366] focus:ring-0 focus:ring-offset-0 cursor-not-allowed accent-[#25D366]"
                 />
-                <label htmlFor="enquiryIncludeImage" className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider cursor-pointer">
+                <label htmlFor="enquiryIncludeImage" className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider cursor-not-allowed">
                   Include product image
                 </label>
               </div>

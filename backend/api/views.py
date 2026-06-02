@@ -123,17 +123,21 @@ class ImageUploadView(APIView):
                     else:
                         raise ValueError("Invalid Catbox response")
                 except Exception as catbox_err:
-                    # Fallback to local file save
-                    try:
-                        jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
-                        os.makedirs(jerseys_dir, exist_ok=True)
-                        filename = f"{uuid.uuid4().hex}.{ext}"
-                        filepath = os.path.join(jerseys_dir, filename)
-                        with open(filepath, 'wb') as f:
-                            f.write(img_bytes)
-                        urls.append(f"/media/jerseys/{filename}")
-                    except Exception as local_err:
+                    # Fallback: on Render, return base64 URL directly to prevent dynamic media files loss on container restart.
+                    # Otherwise, save locally on development machine.
+                    if getattr(settings, 'IS_RENDER', False):
                         urls.append(data_url)
+                    else:
+                        try:
+                            jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
+                            os.makedirs(jerseys_dir, exist_ok=True)
+                            filename = f"{uuid.uuid4().hex}.{ext}"
+                            filepath = os.path.join(jerseys_dir, filename)
+                            with open(filepath, 'wb') as f:
+                                f.write(img_bytes)
+                            urls.append(f"/media/jerseys/{filename}")
+                        except Exception as local_err:
+                            urls.append(data_url)
             except Exception:
                 urls.append(data_url)
 

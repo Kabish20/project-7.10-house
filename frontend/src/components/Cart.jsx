@@ -8,7 +8,7 @@ const formatImageLink = (url) => {
   if (!url) return '';
   const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return '[Custom Jersey - Downloaded to device & Copied to clipboard. Press Ctrl+V / Paste in chat to attach!]';
+    return '[Custom Uploaded Jersey]';
   }
   
   let absoluteUrl = '';
@@ -36,7 +36,8 @@ const Cart = () => {
     removeFromCart, 
     getCartTotal, 
     clearCart,
-    formatPrice
+    formatPrice,
+    API_URL
   } = useShop();
 
   const [checkoutStatus, setCheckoutStatus] = useState('idle'); // 'idle', 'processing', 'success'
@@ -44,60 +45,46 @@ const Cart = () => {
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     setCheckoutStatus('processing');
-
-    // Automatically trigger download of custom images in cart if they are base64/blob, and copy the first one to clipboard
-    let copiedToClipboard = false;
-    for (let i = 0; i < cart.length; i++) {
-      const item = cart[i];
+    
+    // Resolve any base64/data: URLs in the cart items on-the-fly
+    const resolvedCart = await Promise.all(cart.map(async (item) => {
       const imageUrls = item.product.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
-      for (let idx = 0; idx < imageUrls.length; idx++) {
-        const raw = imageUrls[idx].trim();
-        if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-          const label = idx === 0 ? 'Front' : idx === 1 ? 'Back' : `View_${idx + 1}`;
-          const cleanName = item.product.name.replace(/[^a-zA-Z0-9]/g, '_');
-          
-          const link = document.createElement('a');
-          link.href = raw;
-          link.download = `${cleanName}_${label}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          // Copy the first custom image in the cart to clipboard
-          if (!copiedToClipboard) {
-            copiedToClipboard = true;
-            try {
-              const response = await fetch(raw);
-              const blob = await response.blob();
-              let pngBlob = blob;
-              if (blob.type !== 'image/png') {
-                const img = new Image();
-                img.src = raw;
-                await new Promise((resolve) => {
-                  img.onload = resolve;
-                  img.onerror = resolve;
-                });
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+      const base64Images = imageUrls.filter(url => url.trim().startsWith('data:'));
+      
+      if (base64Images.length > 0) {
+        try {
+          const res = await fetch(`${API_URL}/upload-images/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ images: base64Images.map(img => img.trim()) }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            let uploadIdx = 0;
+            const newImageUrls = imageUrls.map(url => {
+              if (url.trim().startsWith('data:')) {
+                return data.urls[uploadIdx++];
               }
-              if (pngBlob) {
-                const itemObj = new ClipboardItem({ [pngBlob.type]: pngBlob });
-                await navigator.clipboard.write([itemObj]);
+              return url;
+            }).join(',');
+            
+            return {
+              ...item,
+              product: {
+                ...item.product,
+                image_url: newImageUrls
               }
-            } catch (err) {
-              console.warn('Clipboard write failed:', err);
-            }
+            };
           }
+        } catch (err) {
+          console.warn("Failed to upload base64 images in cart on-the-fly:", err);
         }
       }
-    }
-    
+      return item;
+    }));
+
     // Construct WhatsApp order details message
-    const orderItemsText = cart.map((item, idx) => {
+    const orderItemsText = resolvedCart.map((item, idx) => {
       const customText = item.isCustom 
         ? `\n    └─ Customization: *${item.customDetails?.name} #${item.customDetails?.number}*` 
         : '';

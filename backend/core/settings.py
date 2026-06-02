@@ -166,6 +166,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# Max upload size (50MB) for handling large base64 image strings
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Trigger server reload after successful database migrations and seeding

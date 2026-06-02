@@ -54,11 +54,46 @@ class AdminLoginView(APIView):
         }, status=status.HTTP_401_UNAUTHORIZED)
 
 
+def upload_to_catbox(img_bytes, ext):
+    import urllib.request
+    import mimetypes
+    boundary = b'----WebKitFormBoundary7MA4YWxkTrZu0gW'
+    
+    body = []
+    body.append(b'--' + boundary)
+    body.append(b'Content-Disposition: form-data; name="reqtype"')
+    body.append(b'')
+    body.append(b'fileupload')
+    body.append(b'--' + boundary)
+    body.append(f'Content-Disposition: form-data; name="fileToUpload"; filename="image.{ext}"'.encode('utf-8'))
+    
+    mime_type = mimetypes.types_map.get(f'.{ext}', 'image/png')
+    body.append(f'Content-Type: {mime_type}'.encode('utf-8'))
+    body.append(b'')
+    body.append(img_bytes)
+    body.append(b'--' + boundary + b'--')
+    body.append(b'')
+    
+    body_bytes = b'\r\n'.join(body)
+    
+    req = urllib.request.Request(
+        'https://catbox.moe/user/api.php',
+        data=body_bytes,
+        headers={
+            'Content-Type': f'multipart/form-data; boundary={boundary.decode("utf-8")}',
+            'User-Agent': 'Mozilla/5.0'
+        }
+    )
+    
+    with urllib.request.urlopen(req) as response:
+        return response.read().decode('utf-8').strip()
+
+
 class ImageUploadView(APIView):
     """
     Accepts a JSON body: { "images": ["data:image/png;base64,...", ...] }
     Saves images to local media directory and returns the resolved media URLs.
-    If the filesystem is read-only, falls back to returning the original base64 strings.
+    If the filesystem is read-only, uploads to Catbox to return a permanent public link.
     """
     parser_classes = [JSONParser]
 
@@ -68,10 +103,8 @@ class ImageUploadView(APIView):
             return Response({'error': 'No images provided.'}, status=status.HTTP_400_BAD_REQUEST)
 
         urls = []
-        try:
-            jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
-            os.makedirs(jerseys_dir, exist_ok=True)
-            for data_url in images_b64:
+        for data_url in images_b64:
+            try:
                 if ';base64,' in data_url:
                     header, encoded = data_url.split(';base64,', 1)
                     ext = header.split('/')[-1]
@@ -81,14 +114,28 @@ class ImageUploadView(APIView):
                     encoded = data_url
                     ext = 'png'
                 img_bytes = base64.b64decode(encoded)
-                filename = f"{uuid.uuid4().hex}.{ext}"
-                filepath = os.path.join(jerseys_dir, filename)
-                with open(filepath, 'wb') as f:
-                    f.write(img_bytes)
-                urls.append(f"/media/jerseys/{filename}")
-        except Exception:
-            # Fallback to base64 if filesystem is read-only
-            urls = images_b64
+
+                # Try Catbox upload first for a permanent, public link
+                try:
+                    catbox_url = upload_to_catbox(img_bytes, ext)
+                    if catbox_url.startswith('http'):
+                        urls.append(catbox_url)
+                    else:
+                        raise ValueError("Invalid Catbox response")
+                except Exception as catbox_err:
+                    # Fallback to local file save
+                    try:
+                        jerseys_dir = os.path.join(settings.MEDIA_ROOT, 'jerseys')
+                        os.makedirs(jerseys_dir, exist_ok=True)
+                        filename = f"{uuid.uuid4().hex}.{ext}"
+                        filepath = os.path.join(jerseys_dir, filename)
+                        with open(filepath, 'wb') as f:
+                            f.write(img_bytes)
+                        urls.append(f"/media/jerseys/{filename}")
+                    except Exception as local_err:
+                        urls.append(data_url)
+            except Exception:
+                urls.append(data_url)
 
         return Response({'urls': urls}, status=status.HTTP_201_CREATED)
 

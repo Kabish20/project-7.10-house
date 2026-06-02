@@ -8,7 +8,7 @@ const formatImageLink = (url) => {
   if (!url) return '';
   const raw = url.split(/,(?=data:|https?:|\/media)/)[0] || '';
   if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-    return '[Custom Jersey - Downloaded to device & Copied to clipboard. Press Ctrl+V / Paste in chat to attach!]';
+    return '[Custom Uploaded Jersey]';
   }
   
   let absoluteUrl = '';
@@ -56,7 +56,8 @@ const Store = () => {
     setActiveHeroProduct, 
     searchQuery, 
     setSearchQuery,
-    formatPrice
+    formatPrice,
+    API_URL
   } = useShop();
 
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -87,58 +88,37 @@ const Store = () => {
 
     // Build image links — support multiple image views (e.g. Front and Back)
     const imageUrls = enquiryProduct.image_url?.split(/,(?=data:|https?:|\/media)/) || [];
-    const imageLinksText = enquiryIncludeImage ? imageUrls.map((url, idx) => {
+    
+    // Resolve base64/data: URLs to public hosted links on-the-fly
+    let resolvedUrls = imageUrls;
+    const base64Images = imageUrls.filter(url => url.trim().startsWith('data:'));
+    if (enquiryIncludeImage && base64Images.length > 0) {
+      try {
+        const res = await fetch(`${API_URL}/upload-images/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: base64Images.map(img => img.trim()) }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          let uploadIdx = 0;
+          resolvedUrls = imageUrls.map(url => {
+            if (url.trim().startsWith('data:')) {
+              return data.urls[uploadIdx++];
+            }
+            return url;
+          });
+        }
+      } catch (err) {
+        console.warn("Failed to upload base64 images on-the-fly:", err);
+      }
+    }
+
+    const imageLinksText = enquiryIncludeImage ? resolvedUrls.map((url, idx) => {
       const formatted = formatImageLink(url);
       const label = idx === 0 ? 'Front View' : idx === 1 ? 'Back View' : `View ${idx + 1}`;
       return `  • *${label}:* ${formatted}`;
     }).join('\n') : '';
-
-    // Automatically trigger download of custom images if they are base64/blob, and copy Front to clipboard
-    if (enquiryIncludeImage) {
-      for (let idx = 0; idx < imageUrls.length; idx++) {
-        const raw = imageUrls[idx].trim();
-        if (raw.startsWith('data:') || raw.startsWith('blob:')) {
-          const label = idx === 0 ? 'Front' : idx === 1 ? 'Back' : `View_${idx + 1}`;
-          const cleanName = enquiryProduct.name.replace(/[^a-zA-Z0-9]/g, '_');
-          
-          const link = document.createElement('a');
-          link.href = raw;
-          link.download = `${cleanName}_${label}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-
-          // Copy image to clipboard so they can paste it directly in WhatsApp
-          if (idx === 0) {
-            try {
-              const response = await fetch(raw);
-              const blob = await response.blob();
-              let pngBlob = blob;
-              if (blob.type !== 'image/png') {
-                const img = new Image();
-                img.src = raw;
-                await new Promise((resolve) => {
-                  img.onload = resolve;
-                  img.onerror = resolve;
-                });
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                pngBlob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-              }
-              if (pngBlob) {
-                const item = new ClipboardItem({ [pngBlob.type]: pngBlob });
-                await navigator.clipboard.write([item]);
-              }
-            } catch (err) {
-              console.warn('Clipboard write failed:', err);
-            }
-          }
-        }
-      }
-    }
 
     const messageText = [
       `🛒 *ORDER ENQUIRY — 7.10 HOUSE*`,

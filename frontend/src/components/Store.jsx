@@ -281,7 +281,7 @@ const Store = () => {
 
                 {/* Jersey Presentation Area */}
                 <div 
-                  onClick={() => openEnquiryModal(product)}
+                  onClick={() => handleProductClick(product)}
                   className="aspect-square bg-linear-to-b from-white/3 to-transparent flex items-center justify-center p-3 relative overflow-hidden cursor-pointer"
                 >
                   <div className="absolute w-[60%] aspect-square rounded-full bg-linear-to-br from-[#bd922b]/5 to-transparent blur-2xl group-hover:bg-[#bd922b]/10 transition-colors duration-500" />
@@ -301,7 +301,7 @@ const Store = () => {
                 <div className="p-3.5 grow flex flex-col justify-between">
                   <div>
                     <h3 
-                      onClick={() => openEnquiryModal(product)}
+                      onClick={() => handleProductClick(product)}
                       className="text-white font-extrabold text-[11px] sm:text-xs uppercase tracking-tight leading-snug line-clamp-1 group-hover:text-neon-gold transition-colors cursor-pointer"
                     >
                       {product.name}
